@@ -5,8 +5,6 @@ import { useGameContext } from "../contexts/GameContext"
 import socketService from "../services/socketService"
 import gameService from "../services/gameService"
 
-interface IJoinRoomProps {}
-
 const JoinRoomContainer = styled.div`
    width: 100%;
    height: 100%;

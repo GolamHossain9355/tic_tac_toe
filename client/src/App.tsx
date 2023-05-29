@@ -37,7 +37,9 @@ function App() {
 
    const connectedSocket = async () => {
       try {
-         await socketService.connect("http://localhost:9000")
+         await socketService.connect(
+            process.env.SERVER_PORT || "http://localhost:9000"
+         )
       } catch (error) {
          console.log("Error connect: ", error)
       }

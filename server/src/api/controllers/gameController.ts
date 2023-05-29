@@ -31,14 +31,22 @@ export class GameController {
       @MessageBody() message: any
    ) {
       const gameRoom = this.getSocketGameRoom(socket)
-      console.log("updating game")
-      // const messageForCurrentSocket =
-      // socket.emit("on_game_update",)
       // every socket in the room except the socket that sent this event
       // will receive this event and payload(in this case it is an update
       // to the ticTacToe game board, GameMatrix)
-      console.log(message)
-
       socket.to(gameRoom).emit("on_game_update", message)
+   }
+
+   @OnMessage("game_win") // Add this decorator
+   public async gameWin(
+      @ConnectedSocket() socket: Socket,
+      @SocketIO() io: Server,
+      @MessageBody() message: any
+   ) {
+      const gameRoom = this.getSocketGameRoom(socket)
+      // every socket in the room except the socket that sent this event
+      // will receive this event and payload(in this case it is an update
+      // to the ticTacToe game board, GameMatrix)
+      socket.to(gameRoom).emit("on_game_win", message)
    }
 }

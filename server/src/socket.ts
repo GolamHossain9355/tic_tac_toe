@@ -6,7 +6,7 @@ import { GameController } from "./api/controllers/gameController"
 export default (httpServer) => {
    const io = new Server(httpServer, {
       cors: {
-         origin: "*",
+         origin: "http://localhost:5173",
       },
    })
 
@@ -28,6 +28,10 @@ export default (httpServer) => {
       socket.on("update_game", async (message) => {
          // console.info("Received update_game event with message:", message)
          await gameController.updateGame(socket, io, message)
+      })
+
+      socket.on("game_win", async (message) => {
+         await gameController.gameWin(socket, io, message)
       })
    })
 

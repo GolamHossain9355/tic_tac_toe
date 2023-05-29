@@ -12,23 +12,15 @@ class GameService {
       })
    }
 
-   public async updateGame(
-      socket: Socket,
-      gameMatrix: GameMatrix,
-      currentTurn: boolean
-   ) {
-      socket.emit("update_game", { matrix: gameMatrix, currentTurn })
+   public async updateGame(socket: Socket, gameMatrix: GameMatrix) {
+      socket.emit("update_game", { matrix: gameMatrix })
    }
 
    public async onGameUpdate(
       socket: Socket,
-      listener: (updatedGameValues: {
-         matrix: GameMatrix
-         currentTurn: boolean
-      }) => void
+      listener: (updatedGameValues: { matrix: GameMatrix }) => void
    ) {
       socket.on("on_game_update", (updatedGameValues) => {
-         // console.log(matrix, currentTurn, symbol)
          listener(updatedGameValues)
       })
    }
@@ -38,9 +30,16 @@ class GameService {
       listener: (options: StartGame) => void
    ) {
       socket.on("start_game", (options) => {
-         console.log("listening on start game", options)
-         return listener(options)
+         listener(options)
       })
+   }
+
+   public async gameWin(socket: Socket, message: string) {
+      socket.emit("game_win", { message })
+   }
+
+   public async onGameWin(socket: Socket, listener: (message: string) => void) {
+      socket.on("on_game_win", ({ message }) => listener(message))
    }
 }
 

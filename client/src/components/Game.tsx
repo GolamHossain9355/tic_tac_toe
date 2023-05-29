@@ -90,6 +90,53 @@ function Game() {
       setIsGameStarted,
    } = useGameContext()
 
+   const checkGameState = (matrix: GameMatrix) => {
+      for (let i = 0; i < matrix.length; i++) {
+         const row = []
+         for (let j = 0; j < matrix[i].length; j++) {
+            row.push(matrix[i][j])
+         }
+
+         if (row.every((value) => value && value === playerSymbol)) {
+            return [true, false]
+         } else if (row.every((value) => value && value !== playerSymbol)) {
+            return [false, true]
+         }
+      }
+
+      for (let i = 0; i < matrix.length; i++) {
+         const column = []
+         for (let j = 0; j < matrix[i].length; j++) {
+            column.push(matrix[j][i])
+         }
+
+         if (column.every((value) => value && value === playerSymbol)) {
+            return [true, false]
+         } else if (column.every((value) => value && value !== playerSymbol)) {
+            return [false, true]
+         }
+      }
+
+      if (matrix[1][1]) {
+         if (matrix[0][0] === matrix[1][1] && matrix[2][2] === matrix[1][1]) {
+            if (matrix[1][1] === playerSymbol) return [true, false]
+            else return [false, true]
+         }
+
+         if (matrix[2][0] === matrix[1][1] && matrix[0][2] === matrix[1][1]) {
+            if (matrix[1][1] === playerSymbol) return [true, false]
+            else return [false, true]
+         }
+      }
+
+      //Check for a tie
+      if (matrix.every((m) => m.every((v) => v !== null))) {
+         return [true, true]
+      }
+
+      return [false, false]
+   }
+
    const updateGameMatrix = (
       row: number,
       col: number,
@@ -101,43 +148,87 @@ function Game() {
       newMatrix[row][col] = symbol
       setMatrix(newMatrix)
 
-      gameService.updateGame(socketService.socket, newMatrix, isPlayerTurn)
+      try {
+         gameService.updateGame(socketService.socket, newMatrix)
+         setIsPlayerTurn(false)
+
+         const [currentPlayerWon, otherPlayerWon] = checkGameState(newMatrix)
+
+         const youWonMessage = "You won!"
+         const youLostMessage = "you lost!"
+         const theGameIsATieMessage = "The game is is a TIE!"
+
+         if (currentPlayerWon && otherPlayerWon) {
+            gameService.gameWin(socketService.socket, theGameIsATieMessage)
+            alert(theGameIsATieMessage)
+            return
+         }
+
+         if (currentPlayerWon) {
+            gameService.gameWin(socketService.socket, youLostMessage)
+            alert(youWonMessage)
+         }
+
+         if (otherPlayerWon) {
+            gameService.gameWin(socketService.socket, youWonMessage)
+            alert(youLostMessage)
+         }
+      } catch (error) {
+         console.error(error)
+      }
    }
 
-   const handleGameUpdate = useCallback(() => {
+   const handleGameUpdate = useCallback(async () => {
       if (!socketService.socket) return
-      gameService.onGameUpdate(
-         socketService.socket,
-         ({ matrix: newMatrix, currentTurn }) => {
-            setIsPlayerTurn(currentTurn)
-            setMatrix(newMatrix)
-         }
-      )
+
+      try {
+         await gameService.onGameUpdate(
+            socketService.socket,
+            ({ matrix: newMatrix }) => {
+               setIsPlayerTurn(true)
+               setMatrix(newMatrix)
+            }
+         )
+      } catch (error) {
+         console.error(error)
+      }
    }, [setIsPlayerTurn])
 
-   const handleGameStart = useCallback(() => {
-      console.log("inside start before ")
+   const handleGameStart = useCallback(async () => {
       if (!socketService.socket) return
-      console.log("inside start after")
-
-      gameService.onStartGame(
-         socketService.socket,
-         ({ symbol, currentTurn }) => {
-            console.log("game values: ", currentTurn, symbol)
-            setPlayerSymbol(symbol)
-            setIsPlayerTurn(currentTurn)
-            setIsGameStarted(true)
-         }
-      )
+      try {
+         await gameService.onStartGame(
+            socketService.socket,
+            ({ symbol, currentTurn }) => {
+               setPlayerSymbol(symbol)
+               setIsPlayerTurn(currentTurn)
+               setIsGameStarted(true)
+            }
+         )
+      } catch (error) {
+         console.error(error)
+      }
    }, [setIsGameStarted, setIsPlayerTurn, setPlayerSymbol])
+
+   const handleGameWin = useCallback(() => {
+      if (!socketService.socket) return
+
+      try {
+         gameService.onGameWin(socketService.socket, (message) => {
+            setIsPlayerTurn(false)
+            alert(message)
+         })
+      } catch (error) {
+         console.error(error)
+      }
+   }, [setIsPlayerTurn])
 
    useEffect(() => {
       handleGameUpdate()
       handleGameStart()
-   }, [handleGameStart, handleGameUpdate])
+      handleGameWin()
+   }, [handleGameStart, handleGameUpdate, handleGameWin])
 
-   console.log("isPlayerTurn: ", isPlayerTurn)
-   console.log("isGameStarted: ", isGameStarted)
    return (
       <GameContainer>
          {!isGameStarted ? (

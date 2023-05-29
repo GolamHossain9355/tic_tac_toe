@@ -34,7 +34,6 @@ export class RoomController {
       const socketRooms = Array.from(socket.rooms.values()).filter(
          (room) => room !== socket.id
       )
-
       // checking if there are any rooms. If there are rooms, then I want to check if only 2 sockets are connected to it
       // if 2 sockets are already connected, then show the room is full error message
       if (
@@ -52,28 +51,23 @@ export class RoomController {
          const connectedSocketsSizeAfterPlayerJoined =
             io.sockets.adapter.rooms.get(message.roomId).size
 
-         if (connectedSocketsSizeAfterPlayerJoined === 1) {
+         if (connectedSocketsSizeAfterPlayerJoined < 2) return
+
+         setTimeout(() => {
+            // Only the last person who joined the room will receive
+            // this event and payload in there  socket
             socket.emit("start_game", {
                symbol: "o",
                currentTurn: false,
             })
-         }
-
-         if (connectedSocketsSizeAfterPlayerJoined === 2) {
-            console.log(
-               "connected sockets",
-               connectedSocketsSizeAfterPlayerJoined
-            )
-
-            // Only the last person who joined the room will receive
-            // this event and payload in there  socket
 
             // Except for the senders socket(last person joined in this case),
             // everyone who joined the room will receive this event and payload in there socket
+            // roomId is the same as a roomName
             socket
                .to(message.roomId)
                .emit("start_game", { symbol: "x", currentTurn: true })
-         }
+         }, 1000)
       }
    }
 }

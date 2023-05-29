@@ -46,10 +46,10 @@ const JoinButton = styled.button`
    }
 `
 
-function JoinRoom(props: IJoinRoomProps) {
+function JoinRoom() {
    const [roomName, setRoomName] = useState("")
    const [isJoining, setIsJoining] = useState(false)
-   const { isInRoom, setIsInRoom } = useGameContext()
+   const { setIsInRoom } = useGameContext()
 
    const handleRoomNameChange = (event: ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value
@@ -72,7 +72,7 @@ function JoinRoom(props: IJoinRoomProps) {
             console.info(`Joined room ${roomName}`)
             setIsInRoom(true)
          }
-      } catch (error: any) {
+      } catch (error: unknown) {
          alert("Could not join this room: " + error)
          console.error(error)
       } finally {

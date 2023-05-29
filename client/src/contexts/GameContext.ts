@@ -5,11 +5,23 @@ import { createContext, useContext } from "react"
 export interface IGameContextProps {
    isInRoom: boolean
    setIsInRoom: (isInRoom: boolean) => void
+   playerSymbol: "x" | "o"
+   setPlayerSymbol: (symbol: "x" | "o") => void
+   isPlayerTurn: boolean
+   setIsPlayerTurn: (currentTurn: boolean) => void
+   isGameStarted: boolean
+   setIsGameStarted: (started: boolean) => void
 }
 
 const defaultState: IGameContextProps = {
    isInRoom: false,
    setIsInRoom: () => {},
+   playerSymbol: "o",
+   setPlayerSymbol: () => {},
+   isPlayerTurn: false,
+   setIsPlayerTurn: () => {},
+   isGameStarted: false,
+   setIsGameStarted: () => {},
 }
 
 export const GameContext = createContext(defaultState)

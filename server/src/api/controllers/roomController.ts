@@ -13,14 +13,10 @@ export class RoomController {
    @OnConnect()
    public onConnection(socket: Socket, io: Server) {
       console.log("New Socket connected to RoomController: ", socket.id)
-
-      socket.on("join_game", (data: any) => {
-         console.log("after on connection")
-      })
    }
 
    @OnMessage("join_game") // Add this decorator
-   public async join_game(
+   public async joinGame(
       @ConnectedSocket() socket: Socket,
       @SocketIO() io: Server,
       @MessageBody() message: any
@@ -32,7 +28,9 @@ export class RoomController {
          message
       )
 
-      const connectedSockets = io.sockets.adapter.rooms.get(message.roomId)
+      const connectedSocketsBeforePlayerJoined = io.sockets.adapter.rooms.get(
+         message.roomId
+      )
       const socketRooms = Array.from(socket.rooms.values()).filter(
          (room) => room !== socket.id
       )
@@ -41,7 +39,8 @@ export class RoomController {
       // if 2 sockets are already connected, then show the room is full error message
       if (
          socketRooms.length > 0 ||
-         (connectedSockets && connectedSockets.size === 2)
+         (connectedSocketsBeforePlayerJoined &&
+            connectedSocketsBeforePlayerJoined.size === 2)
       ) {
          socket.emit("room_join_error", {
             error: "Room is full. Please choose another room to play from.",
@@ -49,16 +48,32 @@ export class RoomController {
       } else {
          await socket.join(message.roomId)
          socket.emit("room_joined")
+
+         const connectedSocketsSizeAfterPlayerJoined =
+            io.sockets.adapter.rooms.get(message.roomId).size
+
+         if (connectedSocketsSizeAfterPlayerJoined === 1) {
+            socket.emit("start_game", {
+               symbol: "o",
+               currentTurn: false,
+            })
+         }
+
+         if (connectedSocketsSizeAfterPlayerJoined === 2) {
+            console.log(
+               "connected sockets",
+               connectedSocketsSizeAfterPlayerJoined
+            )
+
+            // Only the last person who joined the room will receive
+            // this event and payload in there  socket
+
+            // Except for the senders socket(last person joined in this case),
+            // everyone who joined the room will receive this event and payload in there socket
+            socket
+               .to(message.roomId)
+               .emit("start_game", { symbol: "x", currentTurn: true })
+         }
       }
-   }
-
-   static initializeSocket(@ConnectedSocket() socket: Socket) {
-      // Optional: Perform any additional setup or initialization tasks here
-
-      // Bind the socket event handlers
-      socket.onAny((event, ...args) => {
-         // Optional: Perform any preprocessing or middleware tasks before event handling
-         console.log(`Received event '${event}' with arguments:`, args)
-      })
    }
 }

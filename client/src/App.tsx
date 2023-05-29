@@ -5,6 +5,7 @@ import socketService from "./services/socketService"
 import "./App.css"
 import JoinRoom from "./components/JoinRoom"
 import { GameContext, IGameContextProps } from "./contexts/GameContext"
+import Game from "./components/Game"
 
 const AppContainer = styled.div`
    width: 100%;
@@ -30,6 +31,9 @@ const MainContainer = styled.div`
 
 function App() {
    const [isInRoom, setIsInRoom] = useState(false)
+   const [playerSymbol, setPlayerSymbol] = useState<"x" | "o">("o")
+   const [isPlayerTurn, setIsPlayerTurn] = useState(false)
+   const [isGameStarted, setIsGameStarted] = useState(false)
 
    const connectedSocket = async () => {
       try {
@@ -46,6 +50,12 @@ function App() {
    const gameContextValue: IGameContextProps = {
       isInRoom,
       setIsInRoom,
+      playerSymbol,
+      setPlayerSymbol,
+      isPlayerTurn,
+      setIsPlayerTurn,
+      isGameStarted,
+      setIsGameStarted,
    }
 
    return (
@@ -53,9 +63,7 @@ function App() {
          <AppContainer>
             <WelcomeText>Welcome to Tic-Tac-Toe</WelcomeText>
 
-            <MainContainer>
-               <JoinRoom />
-            </MainContainer>
+            <MainContainer>{isInRoom ? <Game /> : <JoinRoom />}</MainContainer>
          </AppContainer>
       </GameContext.Provider>
    )

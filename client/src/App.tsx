@@ -10,14 +10,17 @@ import { defaultCloseLoadingAlertValues } from "./utils/alertFeatures"
 
 function App() {
    const [isInRoom, setIsInRoom] = useState(false)
-   const [playerSymbol, setPlayerSymbol] = useState<"x" | "o">("o")
+   const [playerSymbol, setPlayerSymbol] = useState<"x" | "o" | null>(null)
    const [isPlayerTurn, setIsPlayerTurn] = useState(false)
    const [isGameStarted, setIsGameStarted] = useState(false)
 
    const connectedSocket = async () => {
       let loadingToastId: any
+
       try {
-         loadingToastId = toast.loading("Connecting to server...")
+         if (!toast.isActive(loadingToastId)) {
+            loadingToastId = toast.loading("Connecting to server...")
+         }
 
          await socketService.connect(
             import.meta.env.VITE_SERVER_URL || "http://localhost:9002"
@@ -29,8 +32,15 @@ function App() {
             ...defaultCloseLoadingAlertValues,
             autoClose: 3000,
          })
-      } catch (error: unknown) {
-         console.info(error)
+      } catch (error) {
+         console.error(error)
+         toast.update(loadingToastId, {
+            render:
+               "Socket Could Not Connect. Please refresh the page and try again.",
+            type: toast.TYPE.ERROR,
+            ...defaultCloseLoadingAlertValues,
+            autoClose: 3000,
+         })
       }
    }
 

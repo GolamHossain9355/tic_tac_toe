@@ -5,7 +5,7 @@ import { createContext, useContext } from "react"
 export interface IGameContextProps {
    isInRoom: boolean
    setIsInRoom: (isInRoom: boolean) => void
-   playerSymbol: "x" | "o"
+   playerSymbol: "x" | "o" | null
    setPlayerSymbol: (symbol: "x" | "o") => void
    isPlayerTurn: boolean
    setIsPlayerTurn: (currentTurn: boolean) => void
@@ -16,7 +16,7 @@ export interface IGameContextProps {
 const defaultState: IGameContextProps = {
    isInRoom: false,
    setIsInRoom: () => {},
-   playerSymbol: "o",
+   playerSymbol: null,
    setPlayerSymbol: () => {},
    isPlayerTurn: false,
    setIsPlayerTurn: () => {},

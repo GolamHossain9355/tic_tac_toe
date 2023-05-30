@@ -173,18 +173,15 @@ function Game() {
 
          if (currentPlayerWon && otherPlayerWon) {
             gameService.gameWin(socketService.socket, theGameIsATieMessage)
-            toast.info(theGameIsATieMessage)
             return
          }
 
          if (currentPlayerWon) {
             gameService.gameWin(socketService.socket, youLostMessage)
-            toast.success(youWonMessage)
          }
 
          if (otherPlayerWon) {
             gameService.gameWin(socketService.socket, youWonMessage)
-            toast.error(youLostMessage)
          }
       } catch (error) {
          console.error(error)
@@ -222,7 +219,10 @@ function Game() {
          await gameService.onStartGame(
             socketService.socket,
             ({ symbol, currentTurn }) => {
-               setPlayerSymbol(symbol)
+               if (!playerSymbol) {
+                  toast.info(`You are: ${symbol.toUpperCase()}`)
+                  setPlayerSymbol(symbol)
+               }
                setIsPlayerTurn(currentTurn)
                setIsGameStarted(true)
             }
@@ -230,7 +230,13 @@ function Game() {
       } catch (error) {
          console.error(error)
       }
-   }, [loadingToastIds, setIsGameStarted, setIsPlayerTurn, setPlayerSymbol])
+   }, [
+      loadingToastIds.length,
+      playerSymbol,
+      setIsGameStarted,
+      setIsPlayerTurn,
+      setPlayerSymbol,
+   ])
 
    useEffect(() => {
       if (isGameStarted) {
@@ -251,9 +257,13 @@ function Game() {
             setIsPlayerTurn(false)
             if (message.toLocaleLowerCase() === "you won") {
                toast.success(message)
-            } else {
-               toast.error(message)
+               return
             }
+            if (message.toLocaleLowerCase() === "you lost") {
+               toast.error(message)
+               return
+            }
+            toast.warn(message)
          })
       } catch (error) {
          console.error(error)
@@ -269,7 +279,11 @@ function Game() {
    return (
       <GameContainer>
          {!isGameStarted || !isPlayerTurn ? <PlayStopper /> : null}
-
+         {playerSymbol && (
+            <div className="text-4xl">
+               You are: {playerSymbol.toUpperCase()}
+            </div>
+         )}
          {matrix.map((row, rowIndex) => {
             return (
                <RowContainer key={`row-index-${row} ${rowIndex}`}>

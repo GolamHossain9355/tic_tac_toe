@@ -78,8 +78,11 @@ export type StartGame = {
    symbol: "x" | "o"
    currentTurn: boolean
 }
+
 type MatrixValues = "x" | "o" | null
 export type GameMatrix = Array<Array<MatrixValues>>
+
+type OutcomeMessages = "You Won!" | "You Lost!" | "The game is is a TIE!" | null
 
 const closeLoadingAlert: CloseLoadingAlert = {
    render: `Second player has joined the game`,
@@ -88,6 +91,8 @@ const closeLoadingAlert: CloseLoadingAlert = {
 }
 
 function Game() {
+   const [receivedLostWonOrTieMsg, setReceivedLostWonOrTieMsg] =
+      useState<OutcomeMessages>(null)
    const [loadingToastIds, setLoadingToastIds] = useState<any>([])
    const [matrix, setMatrix] = useState<GameMatrix>([
       [null, null, null],
@@ -179,12 +184,12 @@ function Game() {
 
          if (currentPlayerWon) {
             gameService.gameWin(socketService.socket, youLostMessage)
-            toast.error(youLostMessage)
+            toast.success(youWonMessage)
          }
 
          if (otherPlayerWon) {
             gameService.gameWin(socketService.socket, youWonMessage)
-            toast.success(youWonMessage)
+            toast.error(youLostMessage)
          }
       } catch (error) {
          console.error(error)
@@ -223,7 +228,6 @@ function Game() {
             socketService.socket,
             ({ symbol, currentTurn }) => {
                if (!playerSymbol) {
-                  toast.info(`You are: ${symbol.toUpperCase()}`)
                   setPlayerSymbol(symbol)
                }
                setIsPlayerTurn(currentTurn)
@@ -258,20 +262,32 @@ function Game() {
       try {
          gameService.onGameWin(socketService.socket, (message) => {
             setIsPlayerTurn(false)
-            if (message.toLocaleLowerCase() === "you won") {
-               toast.success(message)
-               return
-            }
-            if (message.toLocaleLowerCase() === "you lost") {
-               toast.error(message)
-               return
-            }
-            toast.info(message)
+            setReceivedLostWonOrTieMsg(message as OutcomeMessages)
          })
       } catch (error) {
          console.error(error)
       }
    }, [setIsPlayerTurn])
+
+   useEffect(() => {
+      if (!playerSymbol) return
+
+      toast.info(`You are: ${playerSymbol.toUpperCase()}`)
+   }, [playerSymbol])
+
+   useEffect(() => {
+      if (!receivedLostWonOrTieMsg) return
+
+      if (receivedLostWonOrTieMsg.toLocaleLowerCase() === "you won!") {
+         toast.success(receivedLostWonOrTieMsg)
+         return
+      }
+      if (receivedLostWonOrTieMsg.toLocaleLowerCase() === "you lost!") {
+         toast.error(receivedLostWonOrTieMsg)
+         return
+      }
+      toast.info(receivedLostWonOrTieMsg)
+   }, [receivedLostWonOrTieMsg])
 
    useEffect(() => {
       handleGameUpdate()

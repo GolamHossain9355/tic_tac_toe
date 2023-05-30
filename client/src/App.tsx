@@ -3,9 +3,10 @@ import socketService from "./services/socketService"
 import JoinRoom from "./components/JoinRoom"
 import { GameContext, IGameContextProps } from "./contexts/GameContext"
 import Game from "./components/Game"
-import { ToastContainer, toast } from "react-toastify"
+import { ToastContainer, toast, Slide } from "react-toastify"
 
 import "./App.css"
+import { defaultCloseLoadingAlertValues } from "./utils/alertFeatures"
 
 function App() {
    const [isInRoom, setIsInRoom] = useState(false)
@@ -14,17 +15,20 @@ function App() {
    const [isGameStarted, setIsGameStarted] = useState(false)
 
    const connectedSocket = async () => {
+      let loadingToastId: any
       try {
-         await toast.promise(
-            socketService.connect(
-               import.meta.env.VITE_SERVER_URL || "http://localhost:9002"
-            ),
-            {
-               pending: "Connecting to server...",
-               success: "Socket connected successfully!",
-               error: "Socket connection failed!",
-            }
+         loadingToastId = toast.loading("Connecting to server...")
+
+         await socketService.connect(
+            import.meta.env.VITE_SERVER_URL || "http://localhost:9002"
          )
+
+         toast.update(loadingToastId, {
+            render: "Socket connected successfully!",
+            type: toast.TYPE.SUCCESS,
+            ...defaultCloseLoadingAlertValues,
+            autoClose: 3000,
+         })
       } catch (error: unknown) {
          console.info(error)
       }
@@ -48,13 +52,13 @@ function App() {
    return (
       <GameContext.Provider value={gameContextValue}>
          <ToastContainer
-            position="top-center"
-            newestOnTop={false}
+            position="top-right"
+            newestOnTop={true}
             closeOnClick
             theme="light"
-            autoClose={3000}
-            limit={3}
+            autoClose={5000}
             progressStyle={{ backgroundColor: "rgb(126 34 206 / 1)" }}
+            transition={Slide}
          />
 
          <div className="flex flex-col w-full h-screen items-center p-4">

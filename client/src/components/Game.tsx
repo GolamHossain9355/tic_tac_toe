@@ -3,6 +3,12 @@ import styled from "styled-components"
 import { useGameContext } from "../contexts/GameContext"
 import socketService from "../services/socketService"
 import gameService from "../services/gameService"
+import { toast } from "react-toastify"
+import {
+   CloseLoadingAlert,
+   defaultCloseLoadingAlertValues,
+   dismissPrevToasts,
+} from "../utils/alertFeatures"
 
 const GameContainer = styled.div`
    display: flex;
@@ -75,7 +81,14 @@ export type StartGame = {
 type MatrixValues = "x" | "o" | null
 export type GameMatrix = Array<Array<MatrixValues>>
 
+const closeLoadingAlert: CloseLoadingAlert = {
+   render: `Second player has joined the game`,
+   type: toast.TYPE.SUCCESS,
+   ...defaultCloseLoadingAlertValues,
+}
+
 function Game() {
+   const [loadingToastIds, setLoadingToastIds] = useState<any>([])
    const [matrix, setMatrix] = useState<GameMatrix>([
       [null, null, null],
       [null, null, null],
@@ -160,18 +173,18 @@ function Game() {
 
          if (currentPlayerWon && otherPlayerWon) {
             gameService.gameWin(socketService.socket, theGameIsATieMessage)
-            alert(theGameIsATieMessage)
+            toast.info(theGameIsATieMessage)
             return
          }
 
          if (currentPlayerWon) {
             gameService.gameWin(socketService.socket, youLostMessage)
-            alert(youWonMessage)
+            toast.success(youWonMessage)
          }
 
          if (otherPlayerWon) {
             gameService.gameWin(socketService.socket, youWonMessage)
-            alert(youLostMessage)
+            toast.error(youLostMessage)
          }
       } catch (error) {
          console.error(error)
@@ -196,6 +209,15 @@ function Game() {
 
    const handleGameStart = useCallback(async () => {
       if (!socketService.socket) return
+
+      if (loadingToastIds.length === 0) {
+         const id = toast.loading("Waiting for the second player to join")
+         setLoadingToastIds((prev: [typeof id]) => {
+            const newArray = [...prev]
+            newArray.push(id)
+            return newArray
+         })
+      }
       try {
          await gameService.onStartGame(
             socketService.socket,
@@ -208,7 +230,18 @@ function Game() {
       } catch (error) {
          console.error(error)
       }
-   }, [setIsGameStarted, setIsPlayerTurn, setPlayerSymbol])
+   }, [loadingToastIds, setIsGameStarted, setIsPlayerTurn, setPlayerSymbol])
+
+   useEffect(() => {
+      if (isGameStarted) {
+         loadingToastIds.forEach((id: any) => {
+            toast.update(id, {
+               ...closeLoadingAlert,
+            })
+            dismissPrevToasts(id)
+         })
+      }
+   }, [isGameStarted, loadingToastIds])
 
    const handleGameWin = useCallback(() => {
       if (!socketService.socket) return
@@ -216,7 +249,11 @@ function Game() {
       try {
          gameService.onGameWin(socketService.socket, (message) => {
             setIsPlayerTurn(false)
-            alert(message)
+            if (message.toLocaleLowerCase() === "you won") {
+               toast.success(message)
+            } else {
+               toast.error(message)
+            }
          })
       } catch (error) {
          console.error(error)
@@ -231,15 +268,11 @@ function Game() {
 
    return (
       <GameContainer>
-         {!isGameStarted ? (
-            <h2>Waiting for the second player to join</h2>
-         ) : null}
-
          {!isGameStarted || !isPlayerTurn ? <PlayStopper /> : null}
 
          {matrix.map((row, rowIndex) => {
             return (
-               <RowContainer>
+               <RowContainer key={`row-index-${row} ${rowIndex}`}>
                   {row.map((colValue: MatrixValues, colIndex) => (
                      <Cell
                         key={`cell index: ${

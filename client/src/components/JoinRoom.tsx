@@ -4,6 +4,9 @@ import styled from "styled-components"
 import { useGameContext } from "../contexts/GameContext"
 import socketService from "../services/socketService"
 import gameService from "../services/gameService"
+import { toast } from "react-toastify"
+import { useCallback } from "react"
+import { defaultCloseLoadingAlertValues } from "../utils/alertFeatures"
 
 const JoinRoomContainer = styled.div`
    width: 100%;
@@ -54,29 +57,39 @@ function JoinRoom() {
       setRoomName(value)
    }
 
-   const joinRoom = async (event: React.FormEvent) => {
-      event.preventDefault()
+   const joinRoom = useCallback(
+      async (event: React.FormEvent) => {
+         event.preventDefault()
+         const socket = socketService.socket
 
-      const socket = socketService.socket
+         if (!roomName || roomName.trim() === "" || !socket) return
 
-      if (!roomName || roomName.trim() === "" || !socket) return
+         setIsJoining(true)
+         const loadingToastId = toast.loading("Joining room")
+         try {
+            const joined = await gameService.joinGameRoom(socket, roomName)
 
-      setIsJoining(true)
-      console.info("Joining room")
-      try {
-         const joined = await gameService.joinGameRoom(socket, roomName)
+            if (!joined) return
 
-         if (joined) {
-            console.info(`Joined room ${roomName}`)
             setIsInRoom(true)
+            toast.update(loadingToastId, {
+               render: `Joined room: ${roomName}`,
+               type: toast.TYPE.SUCCESS,
+               ...defaultCloseLoadingAlertValues,
+            })
+         } catch (error) {
+            toast.update(loadingToastId, {
+               render: `Could not join this room. ${error}`,
+               type: toast.TYPE.ERROR,
+               ...defaultCloseLoadingAlertValues,
+            })
+            console.error(error)
+         } finally {
+            setIsJoining(false)
          }
-      } catch (error: unknown) {
-         alert("Could not join this room: " + error)
-         console.error(error)
-      } finally {
-         setIsJoining(false)
-      }
-   }
+      },
+      [roomName, setIsInRoom]
+   )
 
    return (
       <form onSubmit={joinRoom}>

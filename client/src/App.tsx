@@ -40,7 +40,7 @@ function App() {
             ...defaultCloseLoadingAlertValues,
             autoClose: 3000,
          })
-         connectedSocket()
+         // connectedSocket()
       }
    }
 

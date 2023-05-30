@@ -3,8 +3,8 @@
    "version": "0.0.0",
    "private": true,
    "scripts": {
-      "start1": "ts-node ./src/server",
-      "start": "nodemon"
+      "start": "ts-node ./src/server",
+      "start1": "nodemon"
    },
    "dependencies": {
       "cookie-parser": "~1.4.4",

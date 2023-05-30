@@ -6,7 +6,7 @@ class SocketService {
    public connect(url: string): Promise<Socket> {
       return new Promise((resolve, reject) => {
          this.socket = io(url, {
-            reconnection: true,
+            reconnection: false,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,

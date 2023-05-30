@@ -35,12 +35,13 @@ function App() {
       } catch (error) {
          console.error(error)
          toast.update(loadingToastId, {
-            render: "Socket Could Not Connect",
+            render:
+               "Socket Could Not Connect. Please refresh the page and try again.",
             type: toast.TYPE.ERROR,
             ...defaultCloseLoadingAlertValues,
             autoClose: 3000,
          })
-         // connectedSocket()
+         connectedSocket()
       }
    }
 

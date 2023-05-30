@@ -38,7 +38,7 @@ function App() {
    const connectedSocket = async () => {
       try {
          await socketService.connect(
-            process.env.SERVER_URL || "http://localhost:9000"
+            import.meta.env.VITE_SERVER_URL || "http://localhost:9002"
          )
       } catch (error) {
          console.log("Error connect: ", error)

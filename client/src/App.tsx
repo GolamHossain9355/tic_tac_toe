@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import socketService from "./services/socketService"
 import JoinRoom from "./components/JoinRoom"
 import { GameContext, IGameContextProps } from "./contexts/GameContext"
@@ -14,7 +14,7 @@ function App() {
    const [isPlayerTurn, setIsPlayerTurn] = useState(false)
    const [isGameStarted, setIsGameStarted] = useState(false)
 
-   const connectedSocket = async () => {
+   const connectedSocket = useCallback(async () => {
       let loadingToastId: any
 
       try {
@@ -43,11 +43,11 @@ function App() {
          })
          connectedSocket()
       }
-   }
+   }, [])
 
    useEffect(() => {
       connectedSocket()
-   }, [])
+   }, [connectedSocket])
 
    const gameContextValue: IGameContextProps = {
       isInRoom,

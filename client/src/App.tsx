@@ -76,7 +76,7 @@ function App() {
                Lets Play Tic-Tac-Toe
             </div>
 
-            <div className="self-center justify-self-center w-full h-fit my-auto">
+            <div className="justify-center items-center w-fit h-fit my-auto">
                {isInRoom ? <Game /> : <JoinRoom />}
             </div>
          </div>

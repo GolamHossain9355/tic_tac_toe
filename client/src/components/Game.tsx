@@ -173,15 +173,18 @@ function Game() {
 
          if (currentPlayerWon && otherPlayerWon) {
             gameService.gameWin(socketService.socket, theGameIsATieMessage)
+            toast.info(theGameIsATieMessage)
             return
          }
 
          if (currentPlayerWon) {
             gameService.gameWin(socketService.socket, youLostMessage)
+            toast.error(youLostMessage)
          }
 
          if (otherPlayerWon) {
             gameService.gameWin(socketService.socket, youWonMessage)
+            toast.success(youWonMessage)
          }
       } catch (error) {
          console.error(error)
@@ -263,7 +266,7 @@ function Game() {
                toast.error(message)
                return
             }
-            toast.warn(message)
+            toast.info(message)
          })
       } catch (error) {
          console.error(error)

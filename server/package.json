@@ -5,7 +5,7 @@
    "scripts": {
       "start": "ts-node ./src/server",
       "start1": "nodemon",
-      "build": "tsc"
+      "build": "node_modules/.bin/tsc"
    },
    "dependencies": {
       "cookie-parser": "~1.4.4",

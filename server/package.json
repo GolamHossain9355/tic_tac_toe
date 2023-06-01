@@ -4,7 +4,8 @@
    "private": true,
    "scripts": {
       "start": "ts-node ./src/server",
-      "start1": "nodemon"
+      "start1": "nodemon",
+      "build": "tsc"
    },
    "dependencies": {
       "cookie-parser": "~1.4.4",

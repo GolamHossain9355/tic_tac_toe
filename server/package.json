@@ -5,7 +5,8 @@
    "scripts": {
       "start": "ts-node ./src/server",
       "start1": "nodemon",
-      "build": "tsc"
+      "build": "tsc",
+      "ping": "ts-node src/ping.ts"
    },
    "dependencies": {
       "cookie-parser": "~1.4.4",
@@ -17,6 +18,7 @@
       "jade": "~1.11.0",
       "micro-cors": "^0.1.1",
       "morgan": "~1.9.1",
+      "node-fetch": "^3.3.1",
       "path": "^0.12.7",
       "reflect-metadata": "^0.1.13",
       "socket-controllers": "^0.2.0",

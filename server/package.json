@@ -5,9 +5,7 @@
    "scripts": {
       "start1": "nodemon",
       "build": "tsc",
-      "start": "ts-node src/server.ts",
-      "ping": "node src/ping.js",
-      "pm2-ping": "pm2 start src/ping.js --name 'ping'"
+      "start": "ts-node src/server.ts"
    },
    "dependencies": {
       "cookie-parser": "~1.4.4",

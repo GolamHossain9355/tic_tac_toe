@@ -1,14 +1,14 @@
 import "reflect-metadata"
-var createError = require("http-errors")
-var express = require("express")
-var path = require("path")
-var cookieParser = require("cookie-parser")
-var logger = require("morgan")
+import createError from "http-errors"
+import express, { Request, Response, NextFunction } from "express"
+import path from "path"
+import cookieParser from "cookie-parser"
+import logger from "morgan"
 import cors from "cors"
 
-var indexRouter = require("./routes/index")
+const indexRouter = require("./routes/index")
 
-var app = express()
+const app = express()
 
 app.use(logger("dev"))
 app.use(express.json())
@@ -20,19 +20,35 @@ app.use(cors())
 app.use("/", indexRouter)
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use((_req: Request, _res: Response, next: NextFunction) => {
    next(createError(404))
 })
 
 // error handler
-app.use(function (err, req, res, next) {
-   // set locals, only providing error in development
-   res.locals.message = err.message
-   res.locals.error = req.app.get("env") === "development" ? err : {}
+app.use(
+   (
+      err: createError.HttpError,
+      req: Request,
+      res: Response,
+      _next: NextFunction
+   ) => {
+      // set locals, only providing error in development
+      res.locals.message = err.message
+      res.locals.error = req.app.get("env") === "development" ? err : {}
 
-   // render the error page
-   res.status(err.status || 500)
-   res.render("error")
+      // render the error page
+      res.status(err.status || 500)
+      res.render("error")
+   }
+)
+
+// Move the CORS headers middleware here
+app.use((_req: Request, res: Response, next: NextFunction) => {
+   res.setHeader("Access-Control-Allow-Origin", "*")
+   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+   res.setHeader("Access-Control-Allow-Credentials", "true")
+   next()
 })
 
 export default app

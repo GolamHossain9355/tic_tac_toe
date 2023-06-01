@@ -17,5 +17,5 @@
          "use": "@vercel/node"
       }
    ],
-   "public": "./public"
+   "public": true
 }

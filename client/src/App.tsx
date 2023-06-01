@@ -7,6 +7,7 @@ import { ToastContainer, toast, Slide } from "react-toastify"
 
 import "./App.css"
 import { defaultCloseLoadingAlertValues } from "./utils/alertFeatures"
+import { Socket } from "socket.io-client"
 
 function App() {
    const [isInRoom, setIsInRoom] = useState(false)
@@ -14,40 +15,46 @@ function App() {
    const [isPlayerTurn, setIsPlayerTurn] = useState(false)
    const [isGameStarted, setIsGameStarted] = useState(false)
 
-   const connectedSocket = useCallback(async () => {
+   useEffect(() => {
       let loadingToastId: any
+      let newSocket: Socket | null = null
 
-      try {
-         if (!toast.isActive(loadingToastId)) {
-            loadingToastId = toast.loading("Connecting to server...")
+      async function loadSocket() {
+         try {
+            if (!toast.isActive(loadingToastId)) {
+               loadingToastId = toast.loading("Connecting to server...")
+            }
+
+            newSocket = await socketService.connect(
+               import.meta.env.VITE_SERVER_URL || "http://localhost:9002"
+            )
+
+            toast.update(loadingToastId, {
+               render: "Socket connected successfully!",
+               type: toast.TYPE.SUCCESS,
+               ...defaultCloseLoadingAlertValues,
+               autoClose: 3000,
+            })
+         } catch (error) {
+            console.error(error)
+            toast.update(loadingToastId, {
+               render:
+                  "Socket Could Not Connect. Please refresh the page and try again.",
+               type: toast.TYPE.ERROR,
+               ...defaultCloseLoadingAlertValues,
+               autoClose: 3000,
+            })
          }
+      }
 
-         await socketService.connect(
-            import.meta.env.VITE_SERVER_URL || "http://localhost:9002"
-         )
+      loadSocket()
 
-         toast.update(loadingToastId, {
-            render: "Socket connected successfully!",
-            type: toast.TYPE.SUCCESS,
-            ...defaultCloseLoadingAlertValues,
-            autoClose: 3000,
-         })
-      } catch (error) {
-         console.error(error)
-         toast.update(loadingToastId, {
-            render:
-               "Socket Could Not Connect. Please refresh the page and try again.",
-            type: toast.TYPE.ERROR,
-            ...defaultCloseLoadingAlertValues,
-            autoClose: 3000,
-         })
-         connectedSocket()
+      return () => {
+         if (newSocket) {
+            newSocket.close()
+         }
       }
    }, [])
-
-   useEffect(() => {
-      connectedSocket()
-   }, [connectedSocket])
 
    const gameContextValue: IGameContextProps = {
       isInRoom,

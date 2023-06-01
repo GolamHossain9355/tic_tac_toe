@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import socketService from "./services/socketService"
 import JoinRoom from "./components/JoinRoom"
 import { GameContext, IGameContextProps } from "./contexts/GameContext"

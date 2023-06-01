@@ -6,7 +6,7 @@ interface IGameBoardHeaderProps extends HTMLAttributes<HTMLDivElement> {}
 const GameBoardHeader: FC<IGameBoardHeaderProps> = ({ className, ...rest }) => {
    return (
       <div className={`${className}`} {...rest}>
-         header
+         header asd asd
       </div>
    )
 }

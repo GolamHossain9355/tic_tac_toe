@@ -3,7 +3,7 @@ import socketService from "./services/socketService"
 import JoinRoom from "./components/JoinRoom"
 import { GameContext, IGameContextProps } from "./contexts/GameContext"
 import Game from "./components/Game"
-import { ToastContainer, toast, Slide } from "react-toastify"
+import { ToastContainer, toast, Bounce } from "react-toastify"
 
 import "./App.css"
 import { defaultCloseLoadingAlertValues } from "./utils/alertFeatures"
@@ -71,12 +71,12 @@ function App() {
       <GameContext.Provider value={gameContextValue}>
          <ToastContainer
             position="top-right"
-            newestOnTop={true}
+            newestOnTop={false}
             closeOnClick
             theme="light"
             autoClose={5000}
             progressStyle={{ backgroundColor: "rgb(126 34 206 / 1)" }}
-            transition={Slide}
+            transition={Bounce}
          />
 
          <div className="flex flex-col w-full h-screen items-center p-4">

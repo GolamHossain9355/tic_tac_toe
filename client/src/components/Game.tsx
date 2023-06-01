@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react"
-import styled from "styled-components"
 import { useGameContext } from "../contexts/GameContext"
 import socketService from "../services/socketService"
 import gameService from "../services/gameService"
@@ -9,70 +8,7 @@ import {
    defaultCloseLoadingAlertValues,
    dismissPrevToasts,
 } from "../utils/alertFeatures"
-
-const GameContainer = styled.div`
-   display: flex;
-   flex-direction: column;
-   font-family: "Zen Tokyo Zoo", cursive;
-   position: relative;
-`
-
-const RowContainer = styled.div`
-   width: 100%;
-   display: flex;
-`
-
-interface ICellProps {
-   borderTop?: boolean
-   borderRight?: boolean
-   borderLeft?: boolean
-   borderBottom?: boolean
-}
-
-const Cell = styled.div<ICellProps>`
-   width: 13em;
-   height: 9em;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   border-radius: 20px;
-   cursor: pointer;
-   border-top: ${({ borderTop }) => borderTop && "3px solid #8e44ad"};
-   border-left: ${({ borderLeft }) => borderLeft && "3px solid #8e44ad"};
-   border-bottom: ${({ borderBottom }) => borderBottom && "3px solid #8e44ad"};
-   border-right: ${({ borderRight }) => borderRight && "3px solid #8e44ad"};
-   transition: all 270ms ease-in-out;
-
-   &:hover {
-      background-color: #8d44ad28;
-   }
-`
-
-const PlayStopper = styled.div`
-   width: 100%;
-   height: 100%;
-   position: absolute;
-   bottom: 0;
-   left: 0;
-   z-index: 99;
-   cursor: default;
-`
-
-const X = styled.span`
-   font-size: 100px;
-   color: #8e44ad;
-   &::after {
-      content: "X";
-   }
-`
-
-const O = styled.span`
-   font-size: 100px;
-   color: #8e44ad;
-   &::after {
-      content: "O";
-   }
-`
+import Cell from "./Cell"
 
 export type StartGame = {
    symbol: "x" | "o"
@@ -296,18 +232,27 @@ function Game() {
    }, [handleGameStart, handleGameUpdate, handleGameWin])
 
    return (
-      <GameContainer>
-         {!isGameStarted || !isPlayerTurn ? <PlayStopper /> : null}
+      <div className="flex flex-col relative">
+         {!isGameStarted || !isPlayerTurn ? (
+            // this is basically to disable the board when its not the players turn or when the game has not started yet.
+            <span className="w-full h-full absolute bottom-0 left-0 z-[99] cursor-default" />
+         ) : null}
+
          {playerSymbol && (
             <div className="text-4xl">
                You are: {playerSymbol.toUpperCase()}
             </div>
          )}
+
          {matrix.map((row, rowIndex) => {
             return (
-               <RowContainer key={`row-index-${row} ${rowIndex}`}>
+               <div
+                  className="w-full flex"
+                  key={`row-index-${row} ${rowIndex}`}
+               >
                   {row.map((colValue: MatrixValues, colIndex) => (
                      <Cell
+                        className="font-cursive"
                         key={`cell index: ${
                            colValue === null
                               ? "null" + colIndex
@@ -323,17 +268,21 @@ function Game() {
                      >
                         {colValue ? (
                            colValue.toLowerCase() === "X".toLowerCase() ? (
-                              <X />
+                              <span className="text-8xl text-purple-600 after:content-[X]">
+                                 X
+                              </span>
                            ) : (
-                              <O />
+                              <span className="text-8xl text-purple-600 after:content-[O]">
+                                 O
+                              </span>
                            )
                         ) : null}
                      </Cell>
                   ))}
-               </RowContainer>
+               </div>
             )
          })}
-      </GameContainer>
+      </div>
    )
 }
 

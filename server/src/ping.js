@@ -4,7 +4,7 @@ import fetch from "node-fetch"
 async function pingServer() {
    try {
       // Replace `https://your-server-url` with the actual URL of your server
-      const response = await fetch("https://your-server-url")
+      const response = await fetch("https://tic-tac-toe-back-qqyl.onrender.com")
       console.log(`Ping response: ${response.status}`)
    } catch (error) {
       console.error("Error pinging server:", error)

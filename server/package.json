@@ -3,10 +3,11 @@
    "version": "0.0.0",
    "private": true,
    "scripts": {
-      "start": "ts-node ./src/server",
       "start1": "nodemon",
       "build": "tsc",
-      "ping": "ts-node src/ping.ts"
+      "start": "ts-node src/server.ts",
+      "ping": "node src/ping.js",
+      "pm2-ping": "pm2 start src/ping.js --name 'ping'"
    },
    "dependencies": {
       "cookie-parser": "~1.4.4",
@@ -23,13 +24,13 @@
       "reflect-metadata": "^0.1.13",
       "socket-controllers": "^0.2.0",
       "socket.io": "^4.6.1",
-      "tsc": "^2.0.4",
       "typedi": "^0.10.0"
    },
    "devDependencies": {
       "@types/cors": "^2.8.13",
       "nodemon": "^2.0.22",
+      "pm2": "^5.3.0",
       "ts-node": "^10.9.1",
-      "typescript": "^5.0.4"
+      "typescript": "^5.1.3"
    }
 }

@@ -4,5 +4,6 @@
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
       "esModuleInterop": true
-   }
+   },
+   "include": ["src"]
 }

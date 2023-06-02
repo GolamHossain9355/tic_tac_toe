@@ -9,6 +9,7 @@ import {
    dismissPrevToasts,
 } from "../utils/alertFeatures"
 import Cell from "./Cell"
+import GameBoardHeader from "./GameBoardHeader"
 
 export type StartGame = {
    symbol: "x" | "o"
@@ -20,10 +21,45 @@ export type GameMatrix = Array<Array<MatrixValues>>
 
 type OutcomeMessages = "You Won!" | "You Lost!" | "The game is is a TIE!" | null
 
+export type NumberOrNull = number | null
+type StringOrNull = string | null
+
+export type WiningCells = {
+   firstCell: [NumberOrNull, NumberOrNull]
+   secondCell: [NumberOrNull, NumberOrNull]
+   thirdCell: [NumberOrNull, NumberOrNull]
+}
+
+export type GameResult = {
+   currentPlayerWon: boolean | null
+   otherPlayerWon: boolean | null
+   gameIsATie: boolean | null
+}
+
 const closeLoadingAlert: CloseLoadingAlert = {
    render: `Second player has joined the game`,
    type: toast.TYPE.SUCCESS,
    ...defaultCloseLoadingAlertValues,
+}
+
+const valueIsX = (value: string): boolean => {
+   return value.toLowerCase() === "x"
+}
+
+const cellHasCurrentPlayerSymbol = (
+   colValue: StringOrNull,
+   playerSymbol: StringOrNull
+): boolean | null => {
+   if (colValue === null || playerSymbol === null) return null
+   return colValue.toLowerCase() === playerSymbol.toLowerCase()
+}
+
+const cellHasOtherPlayersSymbol = (
+   colValue: StringOrNull,
+   playerSymbol: StringOrNull
+): boolean | null => {
+   if (colValue === null || playerSymbol === null) return null
+   return colValue.toLowerCase() !== playerSymbol.toLowerCase()
 }
 
 function Game() {
@@ -35,6 +71,16 @@ function Game() {
       [null, null, null],
       [null, null, null],
    ])
+   const [gameResult, setGameResult] = useState<GameResult>({
+      currentPlayerWon: null,
+      otherPlayerWon: null,
+      gameIsATie: null,
+   })
+   const [winingCells, setWiningCells] = useState<WiningCells>({
+      firstCell: [null, null],
+      secondCell: [null, null],
+      thirdCell: [null, null],
+   })
    const {
       playerSymbol,
       setPlayerSymbol,
@@ -44,7 +90,11 @@ function Game() {
       setIsGameStarted,
    } = useGameContext()
 
-   const checkGameState = (matrix: GameMatrix) => {
+   const checkGameState = (
+      matrix: GameMatrix
+   ): [boolean, boolean, WiningCells | null] => {
+      let winningCellsToSet: WiningCells
+
       for (let i = 0; i < matrix.length; i++) {
          const row = []
          for (let j = 0; j < matrix[i].length; j++) {
@@ -52,9 +102,19 @@ function Game() {
          }
 
          if (row.every((value) => value && value === playerSymbol)) {
-            return [true, false]
+            winningCellsToSet = {
+               firstCell: [0, i],
+               secondCell: [1, i],
+               thirdCell: [2, i],
+            }
+            return [true, false, winningCellsToSet]
          } else if (row.every((value) => value && value !== playerSymbol)) {
-            return [false, true]
+            winningCellsToSet = {
+               firstCell: [0, i],
+               secondCell: [1, i],
+               thirdCell: [2, i],
+            }
+            return [false, true, winningCellsToSet]
          }
       }
 
@@ -65,30 +125,56 @@ function Game() {
          }
 
          if (column.every((value) => value && value === playerSymbol)) {
-            return [true, false]
+            winningCellsToSet = {
+               firstCell: [i, 0],
+               secondCell: [i, 1],
+               thirdCell: [i, 2],
+            }
+            return [true, false, winningCellsToSet]
          } else if (column.every((value) => value && value !== playerSymbol)) {
-            return [false, true]
+            winningCellsToSet = {
+               firstCell: [i, 0],
+               secondCell: [i, 1],
+               thirdCell: [i, 2],
+            }
+            return [false, true, winningCellsToSet]
          }
       }
 
       if (matrix[1][1]) {
          if (matrix[0][0] === matrix[1][1] && matrix[2][2] === matrix[1][1]) {
-            if (matrix[1][1] === playerSymbol) return [true, false]
-            else return [false, true]
+            winningCellsToSet = {
+               firstCell: [0, 0],
+               secondCell: [1, 1],
+               thirdCell: [2, 2],
+            }
+            if (matrix[1][1] === playerSymbol) {
+               return [true, false, winningCellsToSet]
+            } else {
+               return [false, true, winningCellsToSet]
+            }
          }
 
          if (matrix[2][0] === matrix[1][1] && matrix[0][2] === matrix[1][1]) {
-            if (matrix[1][1] === playerSymbol) return [true, false]
-            else return [false, true]
+            winningCellsToSet = {
+               firstCell: [2, 0],
+               secondCell: [1, 1],
+               thirdCell: [0, 2],
+            }
+            if (matrix[1][1] === playerSymbol) {
+               return [true, false, winningCellsToSet]
+            } else {
+               return [false, true, winningCellsToSet]
+            }
          }
       }
 
-      //Check for a tie
+      // Check for a tie
       if (matrix.every((m) => m.every((v) => v !== null))) {
-         return [true, true]
+         return [true, true, null]
       }
 
-      return [false, false]
+      return [false, false, null]
    }
 
    const updateGameMatrix = (
@@ -106,26 +192,69 @@ function Game() {
          gameService.updateGame(socketService.socket, newMatrix)
          setIsPlayerTurn(false)
 
-         const [currentPlayerWon, otherPlayerWon] = checkGameState(newMatrix)
+         const [currentPlayerWon, otherPlayerWon, winingCellsToSet] =
+            checkGameState(newMatrix)
 
          const youWonMessage = "You won!"
          const youLostMessage = "you lost!"
          const theGameIsATieMessage = "The game is is a TIE!"
 
          if (currentPlayerWon && otherPlayerWon) {
-            gameService.gameWin(socketService.socket, theGameIsATieMessage)
+            setGameResult((prev) => ({
+               ...prev,
+               currentPlayerWon: false,
+               otherPlayerWon: false,
+               gameIsATie: true,
+            }))
+            setWiningCells((prev) => ({
+               ...prev,
+               ...winingCellsToSet,
+            }))
+            gameService.gameWin(
+               socketService.socket,
+               theGameIsATieMessage,
+               winingCellsToSet
+            )
             toast.info(theGameIsATieMessage)
             return
          }
 
-         if (currentPlayerWon) {
-            gameService.gameWin(socketService.socket, youLostMessage)
-            toast.success(youWonMessage)
+         if (otherPlayerWon) {
+            setGameResult((prev) => ({
+               ...prev,
+               currentPlayerWon: false,
+               otherPlayerWon: true,
+               gameIsATie: false,
+            }))
+            setWiningCells((prev) => ({
+               ...prev,
+               ...winingCellsToSet,
+            }))
+            gameService.gameWin(
+               socketService.socket,
+               youWonMessage,
+               winingCellsToSet
+            )
+            toast.error(youLostMessage)
          }
 
-         if (otherPlayerWon) {
-            gameService.gameWin(socketService.socket, youWonMessage)
-            toast.error(youLostMessage)
+         if (currentPlayerWon) {
+            setGameResult((prev) => ({
+               ...prev,
+               currentPlayerWon: true,
+               otherPlayerWon: false,
+               gameIsATie: false,
+            }))
+            setWiningCells((prev) => ({
+               ...prev,
+               ...winingCellsToSet,
+            }))
+            gameService.gameWin(
+               socketService.socket,
+               youLostMessage,
+               winingCellsToSet
+            )
+            toast.success(youWonMessage)
          }
       } catch (error) {
          console.error(error)
@@ -192,14 +321,22 @@ function Game() {
       }
    }, [isGameStarted, loadingToastIds])
 
-   const handleGameWin = useCallback(() => {
+   const handleGameWin = useCallback(async () => {
       if (!socketService.socket) return
 
       try {
-         gameService.onGameWin(socketService.socket, (message) => {
-            setIsPlayerTurn(false)
-            setReceivedLostWonOrTieMsg(message as OutcomeMessages)
-         })
+         await gameService.onGameWin(
+            socketService.socket,
+            ({ message, winingCells }) => {
+               console.log(winingCells)
+               setIsPlayerTurn(false)
+               setReceivedLostWonOrTieMsg(message as OutcomeMessages)
+               setWiningCells((prev) => ({
+                  ...prev,
+                  ...winingCells,
+               }))
+            }
+         )
       } catch (error) {
          console.error(error)
       }
@@ -216,13 +353,31 @@ function Game() {
 
       if (receivedLostWonOrTieMsg.toLocaleLowerCase() === "you won!") {
          toast.success(receivedLostWonOrTieMsg)
+         setGameResult((prev) => ({
+            ...prev,
+            currentPlayerWon: true,
+            otherPlayerWon: false,
+            gameIsATie: false,
+         }))
          return
       }
       if (receivedLostWonOrTieMsg.toLocaleLowerCase() === "you lost!") {
          toast.error(receivedLostWonOrTieMsg)
+         setGameResult((prev) => ({
+            ...prev,
+            currentPlayerWon: false,
+            otherPlayerWon: true,
+            gameIsATie: false,
+         }))
          return
       }
       toast.info(receivedLostWonOrTieMsg)
+      setGameResult((prev) => ({
+         ...prev,
+         currentPlayerWon: false,
+         otherPlayerWon: false,
+         gameIsATie: true,
+      }))
    }, [receivedLostWonOrTieMsg])
 
    useEffect(() => {
@@ -240,14 +395,14 @@ function Game() {
 
          {playerSymbol && (
             <div className="text-4xl">
-               You are: {playerSymbol.toUpperCase()}
+               <GameBoardHeader playerSymbol={playerSymbol} />
             </div>
          )}
 
          {matrix.map((row, rowIndex) => {
             return (
                <div
-                  className="w-full flex"
+                  className="w-full flex justify-center items-center"
                   key={`row-index-${row} ${rowIndex}`}
                >
                   {row.map((colValue: MatrixValues, colIndex) => (
@@ -262,12 +417,26 @@ function Game() {
                         borderRight={colIndex < 2}
                         borderBottom={rowIndex < 2}
                         borderLeft={colIndex > 0}
+                        isPlayerTurn={isPlayerTurn}
+                        colValueIsNull={colValue === null}
+                        cellPosition={{ colIndex, rowIndex }}
+                        cellHasCurrentPlayerSymbol={cellHasCurrentPlayerSymbol(
+                           colValue,
+                           playerSymbol
+                        )}
+                        cellHasOtherPlayersSymbol={cellHasOtherPlayersSymbol(
+                           colValue,
+                           playerSymbol
+                        )}
+                        gameResult={gameResult}
+                        winingCells={winingCells}
+                        cellIndex={colIndex + rowIndex}
                         onClick={() =>
                            updateGameMatrix(rowIndex, colIndex, playerSymbol)
                         }
                      >
                         {colValue ? (
-                           colValue.toLowerCase() === "X".toLowerCase() ? (
+                           valueIsX(colValue) ? (
                               <span className="text-8xl text-purple-600 after:content-[X]">
                                  X
                               </span>

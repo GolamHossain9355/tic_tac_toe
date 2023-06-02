@@ -1,6 +1,10 @@
 import { Socket } from "socket.io-client"
-import { GameMatrix, StartGame } from "../components/Game"
+import { GameMatrix, StartGame, WiningCells } from "../components/Game"
 
+type MessageReceived = {
+   message: string
+   winingCells: WiningCells
+}
 class GameService {
    public async joinGameRoom(socket: Socket, roomId: string): Promise<boolean> {
       return new Promise((resolve, reject) => {
@@ -34,12 +38,22 @@ class GameService {
       })
    }
 
-   public async gameWin(socket: Socket, message: string) {
-      socket.emit("game_win", { message })
+   public async gameWin(
+      socket: Socket,
+      message: string,
+      winingCells: WiningCells | null
+   ) {
+      socket.emit("game_win", { message, winingCells })
    }
 
-   public async onGameWin(socket: Socket, listener: (message: string) => void) {
-      socket.on("on_game_win", ({ message }) => listener(message))
+   // listener: (message: string, winingCells: WiningCells) => void
+   public async onGameWin(
+      socket: Socket,
+      listener: (options: MessageReceived) => void
+   ) {
+      socket.on("on_game_win", (options) => {
+         return listener(options)
+      })
    }
 }
 

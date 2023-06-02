@@ -1,12 +1,17 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
 import { FC, HTMLAttributes } from "react"
 
-interface IGameBoardHeaderProps extends HTMLAttributes<HTMLDivElement> {}
+interface IGameBoardHeaderProps extends HTMLAttributes<HTMLDivElement> {
+   playerSymbol: "x" | "o"
+}
 
-const GameBoardHeader: FC<IGameBoardHeaderProps> = ({ className, ...rest }) => {
+const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
+   className,
+   playerSymbol,
+   ...rest
+}) => {
    return (
-      <div className={`${className}`} {...rest}>
-         header asd asd
+      <div className={`${className} w-full border border-black`} {...rest}>
+         You are {playerSymbol}
       </div>
    )
 }

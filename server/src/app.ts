@@ -19,8 +19,13 @@ app.use(cors())
 
 app.use("/", indexRouter)
 
-app.get("/", (_req: Request, res: Response) => {
-   res.status(200).json({ data: "Server running" })
+// Move the CORS headers middleware here
+app.use((_req: Request, res: Response, next: NextFunction) => {
+   res.setHeader("Access-Control-Allow-Origin", "*")
+   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+   res.setHeader("Access-Control-Allow-Credentials", "true")
+   next()
 })
 
 // catch 404 and forward to error handler
@@ -32,27 +37,17 @@ app.use((_req: Request, _res: Response, next: NextFunction) => {
 app.use(
    (
       err: createError.HttpError,
-      req: Request,
+      _req: Request,
       res: Response,
       _next: NextFunction
    ) => {
-      // set locals, only providing error in development
-      res.locals.message = err.message
-      res.locals.error = req.app.get("env") === "development" ? err : {}
-
-      // render the error page
-      res.status(err.status || 500)
-      res.render("error")
+      res.status(err.status || 500).json({
+         error: {
+            message: err.message || "Internal Server Error",
+            status: err.status || 500,
+         },
+      })
    }
 )
-
-// Move the CORS headers middleware here
-app.use((_req: Request, res: Response, next: NextFunction) => {
-   res.setHeader("Access-Control-Allow-Origin", "*")
-   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
-   res.setHeader("Access-Control-Allow-Credentials", "true")
-   next()
-})
 
 export default app

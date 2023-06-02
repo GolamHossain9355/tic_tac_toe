@@ -19,6 +19,10 @@ app.use(cors())
 
 app.use("/", indexRouter)
 
+app.get("/", (_req: Request, res: Response) => {
+   res.status(200).json({ data: "Server running" })
+})
+
 // catch 404 and forward to error handler
 app.use((_req: Request, _res: Response, next: NextFunction) => {
    next(createError(404))

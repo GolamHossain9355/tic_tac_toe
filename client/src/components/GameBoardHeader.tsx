@@ -123,7 +123,7 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
             className={`w-full flex py-4 justify-center items-center relative`}
          >
             <div
-               className={`${currentPlayerTextStyle} font-bold transition-colors`}
+               className={`${currentPlayerTextStyle} font-bold transition-colors text-2xl md:text-4xl`}
             >
                Your Turn ({playerSymbol.toUpperCase()})
             </div>
@@ -134,7 +134,7 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
             className={`w-full py-4 flex justify-center items-center relative`}
          >
             <div
-               className={`${otherPlayerTextStyle} font-bold transition-colors`}
+               className={`${otherPlayerTextStyle} font-bold transition-colors text-2xl md:text-4xl `}
             >
                Player 2 ({otherPlayerSymbol.toUpperCase()})
             </div>

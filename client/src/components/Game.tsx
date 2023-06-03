@@ -579,11 +579,11 @@ function Game() {
                      >
                         {colValue ? (
                            valueIsX(colValue) ? (
-                              <span className="text-8xl text-purple-600 after:content-[X]">
+                              <span className="text-6xl md:text-8xl text-purple-600 after:content-[X]">
                                  X
                               </span>
                            ) : (
-                              <span className="text-8xl text-purple-600 after:content-[O]">
+                              <span className="text-6xl md:text-8xl text-purple-600 after:content-[O]">
                                  O
                               </span>
                            )

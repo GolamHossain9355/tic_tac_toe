@@ -317,28 +317,28 @@ function Game() {
       }
    }
 
-   const resetGame = async () => {
-      if (!socketService.socket) return
+   // const resetGame = async () => {
+   //    if (!socketService.socket) return
 
-      try {
-         setIsResettingGame(true)
-         setGameResult(initialGameResultValues)
-         setWiningCells(initialWiningCellValues)
-         setReceivedLostWonOrTieMsg(null)
-         setIsGameStarted(true)
-         setIsPlayerTurn(false)
-         setGameInfo((prev) => ({
-            ...prev,
-            totalGames: prev.currentGameNumber,
-            currentGameNumber: prev.currentGameNumber + 1,
-         }))
-         await gameService.gameReset(socketService.socket)
-      } catch (error) {
-         console.error(error)
-      } finally {
-         setIsResettingGame(false)
-      }
-   }
+   //    try {
+   //       setIsResettingGame(true)
+   //       setGameResult(initialGameResultValues)
+   //       setWiningCells(initialWiningCellValues)
+   //       setReceivedLostWonOrTieMsg(null)
+   //       setIsGameStarted(true)
+   //       setIsPlayerTurn(false)
+   //       setGameInfo((prev) => ({
+   //          ...prev,
+   //          totalGames: prev.currentGameNumber,
+   //          currentGameNumber: prev.currentGameNumber + 1,
+   //       }))
+   //       await gameService.gameReset(socketService.socket)
+   //    } catch (error) {
+   //       console.error(error)
+   //    } finally {
+   //       setIsResettingGame(false)
+   //    }
+   // }
 
    const handleGameUpdate = useCallback(async () => {
       if (!socketService.socket) return
@@ -514,7 +514,7 @@ function Game() {
       if (isResettingGame) setMatrix(initialMatrixValues)
    }, [isResettingGame, matrix])
 
-   const gameHasResult = true || Object.values(gameResult).includes(true)
+   // const gameHasResult = true || Object.values(gameResult).includes(true)
 
    return (
       <div className="flex flex-col relative">

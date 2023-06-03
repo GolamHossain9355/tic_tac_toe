@@ -1,10 +1,10 @@
 import { FC, HTMLAttributes, useEffect, useState } from "react"
 import { GameInfo, GameResult } from "./Game"
 
-type XorO = "x" | "o"
+type XorO = "x" | "o" | "..."
 
 interface IGameBoardHeaderProps extends HTMLAttributes<HTMLDivElement> {
-   playerSymbol: XorO | "..."
+   playerSymbol: XorO
    isPlayerTurn: boolean
    gameResult: GameResult
    gameInfo: GameInfo

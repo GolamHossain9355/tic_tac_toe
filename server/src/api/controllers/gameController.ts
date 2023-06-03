@@ -21,7 +21,7 @@ export class GameController {
 
    @OnConnect()
    public onConnection(socket: Socket, io: Server) {
-      console.log("New Socket connected to GameController: ", socket.id)
+      console.debug("New Socket connected to GameController: ", socket.id)
    }
 
    @OnMessage("update_game") // Add this decorator
@@ -48,5 +48,19 @@ export class GameController {
       // will receive this event and payload(in this case it is an update
       // to the ticTacToe game board, GameMatrix)
       socket.to(gameRoom).emit("on_game_win", message)
+   }
+
+   @OnMessage("game_reset")
+   public async gameReset(
+      @ConnectedSocket() socket: Socket,
+      @SocketIO() io: Server,
+      @MessageBody() message: any
+   ) {
+      const gameRoom = this.getSocketGameRoom(socket)
+      // every socket in the room except the socket that sent this event
+      // will receive this event and payload(in this case it is an update
+      // to the ticTacToe game board, GameMatrix)
+      socket.emit("on_game_reset", message)
+      socket.to(gameRoom).emit("on_game_reset", message)
    }
 }

@@ -40,3 +40,34 @@
       transform: rotate(360deg);
    }
 }
+
+.border-expand {
+   animation-name: expand;
+   animation-duration: 0.3s;
+   animation-fill-mode: forwards;
+}
+
+.border-shrink {
+   animation-name: shrink;
+   animation-duration: 0.3s;
+   animation-delay: 0.15s;
+   animation-fill-mode: backwards;
+}
+
+@keyframes expand {
+   from {
+      width: 0;
+   }
+   to {
+      width: 100%;
+   }
+}
+
+@keyframes shrink {
+   from {
+      width: 100%;
+   }
+   to {
+      width: 0;
+   }
+}

@@ -1,5 +1,5 @@
 import { FC, HTMLAttributes, useState, useEffect } from "react"
-import { GameResult, NumberOrNull, WiningCells } from "./Game"
+import { GameInfo, GameResult, NumberOrNull, WiningCells } from "./Game"
 
 interface ICellProps extends HTMLAttributes<HTMLDivElement> {
    borderTop: boolean
@@ -14,6 +14,7 @@ interface ICellProps extends HTMLAttributes<HTMLDivElement> {
    cellHasOtherPlayersSymbol: boolean | null
    gameResult: GameResult
    winingCells: WiningCells
+   gameInfo: GameInfo
 }
 
 const waitTimeBeforeCellIsGray = (
@@ -53,11 +54,13 @@ const Cell: FC<ICellProps> = ({
    winingCells,
    cellPosition,
    cellIndex,
+   gameInfo,
    ...rest
 }) => {
    const [disabledCellValue, setDisabledCellValue] = useState<null | string>(
       null
    )
+   const [currentCellStyle, setCurrentCellStyle] = useState<string>("")
 
    const formattedWinningCellValues = formattedWiningCells(winingCells)
 
@@ -83,6 +86,49 @@ const Cell: FC<ICellProps> = ({
       loadCellValue()
    }, [cellIndex, colValueIsNull, isPlayerTurn])
 
+   useEffect(() => {
+      const { currentPlayerWon, gameIsATie, otherPlayerWon } = gameResult
+      const gameFinished = currentPlayerWon || otherPlayerWon || gameIsATie
+
+      if (cellHasCurrentPlayerSymbol && !gameFinished) {
+         setCurrentCellStyle(
+            "bg-green-200 hover:bg-green-200 hover:bg-opacity-100"
+         )
+         return
+      }
+
+      if (cellHasOtherPlayersSymbol && !gameFinished) {
+         setCurrentCellStyle("bg-red-200 hover:bg-red-200 hover:bg-opacity-100")
+         return
+      }
+
+      if (isCurrentWiningCell && currentPlayerWon) {
+         setCurrentCellStyle("bg-green-400 hover:bg-green-400")
+         return
+      }
+
+      if (isCurrentWiningCell && otherPlayerWon) {
+         setCurrentCellStyle("bg-red-400 hover:bg-red-400")
+         return
+      }
+
+      if (!isCurrentWiningCell && (currentPlayerWon || otherPlayerWon)) {
+         setCurrentCellStyle("bg-gray-700 bg-opacity-20")
+         return
+      }
+
+      // this will be the style for all the cells if the game is a tie
+      if (gameIsATie) {
+         setCurrentCellStyle("bg-gray-700 bg-opacity-20")
+         return
+      }
+   }, [
+      cellHasCurrentPlayerSymbol,
+      cellHasOtherPlayersSymbol,
+      gameResult,
+      isCurrentWiningCell,
+   ])
+
    return (
       <div
          className={`w-52 h-36 max-w-52 flex items-center justify-center rounded-2xl cursor-pointer gap-2
@@ -91,34 +137,8 @@ const Cell: FC<ICellProps> = ({
       ${borderBottom ? "border-b-4 border-purple-700 " : ""}
       ${borderLeft ? "border-l-4 border-purple-700 " : ""}
       transition-all duration-300 ease-in-out hover:bg-purple-600 hover:bg-opacity-10 ${className}
-      ${disabledCellValue} ${
-            cellHasCurrentPlayerSymbol &&
-            "bg-green-300 hover:bg-green-300 hover:bg-opacity-100"
-         } ${
-            cellHasOtherPlayersSymbol &&
-            "bg-red-300 hover:bg-red-300 hover:bg-opacity-100"
-         }
-         ${
-            isCurrentWiningCell &&
-            gameResult.currentPlayerWon &&
-            "bg-green-500 hover:bg-green-500"
-         }
-         ${
-            isCurrentWiningCell &&
-            gameResult.otherPlayerWon &&
-            "bg-red-500 hover:bg-red-500"
-         }
-         ${
-            gameResult.gameIsATie &&
-            cellHasCurrentPlayerSymbol &&
-            "bg-green-700 hover:bg-green-700"
-         }
-         ${
-            gameResult.gameIsATie &&
-            cellHasOtherPlayersSymbol &&
-            "bg-red-700 hover:bg-red-700"
-         }
-      `}
+      ${disabledCellValue} ${currentCellStyle}
+         `}
          {...rest}
       >
          {children}

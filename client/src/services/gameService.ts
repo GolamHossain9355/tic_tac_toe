@@ -5,6 +5,10 @@ type MessageReceived = {
    message: string
    winingCells: WiningCells
 }
+
+type ResetGame = {
+   message: string
+}
 class GameService {
    public async joinGameRoom(socket: Socket, roomId: string): Promise<boolean> {
       return new Promise((resolve, reject) => {
@@ -16,16 +20,27 @@ class GameService {
       })
    }
 
-   public async updateGame(socket: Socket, gameMatrix: GameMatrix) {
-      socket.emit("update_game", { matrix: gameMatrix })
+   public async updateGame(
+      socket: Socket,
+      gameMatrix: GameMatrix,
+      isResettingGame: boolean
+   ) {
+      socket.emit("update_game", {
+         matrix: gameMatrix,
+         resettingGame: isResettingGame,
+      })
    }
 
    public async onGameUpdate(
       socket: Socket,
-      listener: (updatedGameValues: { matrix: GameMatrix }) => void
+      listener: (updatedGameValues: {
+         matrix: GameMatrix
+         resettingGame: boolean
+      }) => void
    ) {
       socket.on("on_game_update", (updatedGameValues) => {
-         listener(updatedGameValues)
+         console.log("here game service")
+         return listener(updatedGameValues)
       })
    }
 
@@ -34,7 +49,7 @@ class GameService {
       listener: (options: StartGame) => void
    ) {
       socket.on("start_game", (options) => {
-         listener(options)
+         return listener(options)
       })
    }
 
@@ -46,14 +61,23 @@ class GameService {
       socket.emit("game_win", { message, winingCells })
    }
 
-   // listener: (message: string, winingCells: WiningCells) => void
    public async onGameWin(
       socket: Socket,
       listener: (options: MessageReceived) => void
    ) {
-      socket.on("on_game_win", (options) => {
-         return listener(options)
-      })
+      socket.on("on_game_win", (options) => listener(options))
+   }
+
+   public async gameReset(socket: Socket) {
+      const message = "Reset game"
+      socket.emit("game_reset", message)
+   }
+
+   public async onGameReset(
+      socket: Socket,
+      listener: (options: ResetGame) => void
+   ) {
+      socket.on("on_game_reset", (options) => listener(options))
    }
 }
 

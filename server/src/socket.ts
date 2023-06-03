@@ -33,6 +33,10 @@ export default (httpServer) => {
       socket.on("game_win", async (message) => {
          await gameController.gameWin(socket, io, message)
       })
+
+      socket.on("game_reset", async (message) => {
+         await gameController.gameReset(socket, io, message)
+      })
    })
 
    return io

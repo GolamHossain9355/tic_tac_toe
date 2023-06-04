@@ -131,7 +131,9 @@ const Cell: FC<ICellProps> = ({
 
    return (
       <div
-         className={`w-28 h-24  md:w-40 md:h-36 lg:w-52 lg:h-40 max-w-52 flex items-center justify-center rounded-2xl cursor-pointer gap-2
+         className={`w-28 h-24 ${
+            !colValueIsNull && "pointer-events-none"
+         } md:w-40 md:h-36 lg:w-52 lg:h-40 max-w-52 flex items-center justify-center rounded-2xl cursor-pointer gap-2
       ${borderTop ? "border-t-4 border-purple-700 " : ""}
       ${borderRight ? "border-r-4 border-purple-700 " : ""}
       ${borderBottom ? "border-b-4 border-purple-700 " : ""}

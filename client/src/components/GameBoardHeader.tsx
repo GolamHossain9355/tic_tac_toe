@@ -35,24 +35,24 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
    useEffect(() => {
       const currentPlayerConstantStyle =
          "border-b-8 rounded-l-lg border-purple-700 absolute top-full right-0"
+      const currentPlayerLossStyle =
+         "border-b-8 rounded-l-lg border-gray-700 border-opacity-40 absolute top-full right-0"
       const otherPlayerConstantStyle =
          "border-b-8 rounded-r-lg border-red-700 absolute top-full left-0"
-
-      const losersBorderColor = "border-gray-700 border-opacity-40"
+      const otherPlayersLossStyle =
+         "border-b-8 rounded-r-lg order-gray-700 border-opacity-40 absolute top-full left-0"
 
       if (currentPlayerWon) {
          setCurrentPlayerBorderAnimation(
             `${currentPlayerConstantStyle} border-expand`
          )
-         setOtherPlayerBorderAnimation(
-            `${otherPlayerConstantStyle} ${losersBorderColor} border-expand`
-         )
+         setOtherPlayerBorderAnimation(`${otherPlayersLossStyle} border-expand`)
          return
       }
 
       if (otherPlayerWon) {
          setCurrentPlayerBorderAnimation(
-            `${currentPlayerConstantStyle} ${losersBorderColor} border-expand`
+            `${currentPlayerLossStyle} border-expand`
          )
          setOtherPlayerBorderAnimation(
             `${otherPlayerConstantStyle} border-expand`
@@ -62,11 +62,9 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
 
       if (gameIsATie) {
          setCurrentPlayerBorderAnimation(
-            `${currentPlayerConstantStyle} ${losersBorderColor} border-expand`
+            `${currentPlayerLossStyle} border-expand`
          )
-         setOtherPlayerBorderAnimation(
-            `${otherPlayerConstantStyle} ${losersBorderColor} border-expand`
-         )
+         setOtherPlayerBorderAnimation(`${otherPlayersLossStyle} border-expand`)
          return
       }
 

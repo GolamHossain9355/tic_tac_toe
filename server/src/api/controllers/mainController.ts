@@ -9,6 +9,6 @@ import {
 export class MainController {
    @OnConnect()
    public onConnection(socket: Socket, io: Server) {
-      console.log("New Socket connected to MainController:  ", socket.id)
+      console.info("New Socket connected to MainController:  ", socket.id)
    }
 }

@@ -12,7 +12,7 @@ import { Server, Socket } from "socket.io"
 export class RoomController {
    @OnConnect()
    public onConnection(socket: Socket, io: Server) {
-      console.log("New Socket connected to RoomController: ", socket.id)
+      console.info("New Socket connected to RoomController: ", socket.id)
    }
 
    @OnMessage("join_game") // Add this decorator
@@ -21,7 +21,7 @@ export class RoomController {
       @SocketIO() io: Server,
       @MessageBody() message: any
    ) {
-      console.log(
+      console.info(
          "new user joining room: " + socket.id,
          " ",
          "Message: ",

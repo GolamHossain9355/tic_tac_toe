@@ -1,5 +1,5 @@
 import { FC, HTMLAttributes, useState, useEffect } from "react"
-import { GameInfo, GameResult, NumberOrNull, WiningCells } from "./Game"
+import { GameResult, NumberOrNull, WiningCells } from "./Game"
 
 interface ICellProps extends HTMLAttributes<HTMLDivElement> {
    borderTop: boolean

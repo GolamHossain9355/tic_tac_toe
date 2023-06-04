@@ -40,7 +40,7 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
       const otherPlayerConstantStyle =
          "border-b-8 rounded-r-lg border-red-700 absolute top-full left-0"
       const otherPlayersLossStyle =
-         "border-b-8 rounded-r-lg order-gray-700 border-opacity-40 absolute top-full left-0"
+         "border-b-8 rounded-r-lg border-gray-700 border-opacity-40 absolute top-full left-0"
 
       if (currentPlayerWon) {
          setCurrentPlayerBorderAnimation(

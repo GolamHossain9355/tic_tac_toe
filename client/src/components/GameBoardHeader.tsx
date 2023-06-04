@@ -18,19 +18,23 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
    gameInfo,
    ...rest
 }) => {
-   const otherPlayerSymbol: XorO =
-      playerSymbol === "..." ? "..." : playerSymbol === "x" ? "o" : "x"
    const [currentPlayerBorderAnimation, setCurrentPlayerBorderAnimation] =
       useState<string>("")
    const [otherPlayerBorderAnimation, setOtherPlayerBorderAnimation] =
       useState<string>("")
    const [currentPlayerTextStyle, setCurrentPlayerTextStyle] =
       useState("text-purple-700")
-
    const [otherPlayerTextStyle, setOtherPlayerTextStyle] =
       useState("text-red-700")
+   const [youWonTableTextColor, setYouWonTableTextColor] =
+      useState("text-purple-800")
+   const [youLostTableTextColor, setYouLostTableTextColor] =
+      useState("text-purple-800")
 
+   const otherPlayerSymbol: XorO =
+      playerSymbol === "..." ? "..." : playerSymbol === "x" ? "o" : "x"
    const { currentPlayerWon, otherPlayerWon, gameIsATie } = gameResult
+   const losersGrayColor = "text-gray-700 text-opacity-50"
 
    useEffect(() => {
       const currentPlayerConstantStyle =
@@ -84,8 +88,6 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
       setOtherPlayerBorderAnimation(`${otherPlayerConstantStyle} border-expand`)
    }, [currentPlayerWon, gameIsATie, gameResult, isPlayerTurn, otherPlayerWon])
 
-   const losersGrayColor = "text-gray-700 text-opacity-50"
-
    useEffect(() => {
       if (otherPlayerWon) {
          setCurrentPlayerTextStyle(`${losersGrayColor}`)
@@ -112,31 +114,100 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
       gameInfo.currentGameNumber,
    ])
 
+   useEffect(() => {
+      if (gameInfo.currentPlayerWon > gameInfo.otherPlayerWon) {
+         setYouWonTableTextColor("text-green-500 font-bold")
+         setYouLostTableTextColor(`${losersGrayColor}`)
+      }
+
+      if (gameInfo.currentPlayerWon < gameInfo.otherPlayerWon) {
+         setYouWonTableTextColor(`${losersGrayColor}`)
+         setYouLostTableTextColor("text-red-500 font-bold")
+      }
+
+      if (gameInfo.totalGames === 0) return
+
+      if (gameInfo.currentPlayerWon === gameInfo.otherPlayerWon) {
+         setYouWonTableTextColor(`${losersGrayColor}`)
+         setYouLostTableTextColor(`${losersGrayColor}`)
+      }
+   }, [gameInfo.currentPlayerWon, gameInfo.otherPlayerWon, gameInfo.totalGames])
+
    return (
-      <div
-         className={`${className} w-full flex justify-center items-center mb-12`}
-         {...rest}
-      >
-         <div
-            className={`w-full flex py-4 justify-center items-center relative`}
-         >
-            <div
-               className={`${currentPlayerTextStyle} font-bold transition-colors text-2xl md:text-4xl`}
-            >
-               Your Turn ({playerSymbol.toUpperCase()})
-            </div>
-            <span className={`${currentPlayerBorderAnimation}`} />
+      <div className={`${className} mb-14 mt-6`} {...rest}>
+         <div className="font-normal text-purple-800">
+            <table className="w-full text-xl border border-gray-300">
+               <tr>
+                  <th className="font-normal text-right w-1/2 border border-gray-300 p-2">
+                     Total Played:
+                  </th>
+                  <td className="w-1/2 text-center border border-gray-300">
+                     <span className="font-bold">{gameInfo.totalGames}</span>
+                  </td>
+               </tr>
+               <tr>
+                  <th className="font-normal text-right w-1/2 border p-2 border-gray-300">
+                     Game Number:
+                  </th>
+                  <td className="w-1/2 text-center border border-gray-300">
+                     <span className="font-bold">
+                        {gameInfo.currentGameNumber}
+                     </span>
+                  </td>
+               </tr>
+               <tr className={`${youWonTableTextColor}`}>
+                  <th className="font-normal text-right w-1/2 border p-2 border-gray-300">
+                     You Won:
+                  </th>
+                  <td className="w-1/2 text-center border border-gray-300">
+                     <span className="font-bold">
+                        {gameInfo.currentPlayerWon}
+                     </span>
+                  </td>
+               </tr>
+               <tr className={`${youLostTableTextColor}`}>
+                  <th className="font-normal text-right w-1/2 p-2 border border-gray-300">
+                     Player 2 Won:
+                  </th>
+                  <td className="w-1/2 text-center border border-gray-300">
+                     <span className="font-bold">
+                        {gameInfo.otherPlayerWon}
+                     </span>
+                  </td>
+               </tr>
+               <tr>
+                  <th className="font-normal text-right w-1/2  p-2 border border-gray-300">
+                     Games Tied:
+                  </th>
+                  <td className="w-1/2 text-center border border-gray-300">
+                     <span className="font-bold">{gameInfo.gameIsATie}</span>
+                  </td>
+               </tr>
+            </table>
          </div>
 
-         <div
-            className={`w-full py-4 flex justify-center items-center relative`}
-         >
+         <div className="w-full flex justify-center items-center">
             <div
-               className={`${otherPlayerTextStyle} font-bold transition-colors text-2xl md:text-4xl `}
+               className={`w-full flex py-4 justify-center items-center relative`}
             >
-               Player 2 ({otherPlayerSymbol.toUpperCase()})
+               <div
+                  className={`${currentPlayerTextStyle} font-bold transition-colors text-2xl md:text-4xl`}
+               >
+                  Your Turn ({playerSymbol.toUpperCase()})
+               </div>
+               <span className={`${currentPlayerBorderAnimation}`} />
             </div>
-            <span className={`${otherPlayerBorderAnimation}`} />
+
+            <div
+               className={`w-full py-4 flex justify-center items-center relative`}
+            >
+               <div
+                  className={`${otherPlayerTextStyle} font-bold transition-colors text-2xl md:text-4xl `}
+               >
+                  Player 2 ({otherPlayerSymbol.toUpperCase()})
+               </div>
+               <span className={`${otherPlayerBorderAnimation}`} />
+            </div>
          </div>
       </div>
    )

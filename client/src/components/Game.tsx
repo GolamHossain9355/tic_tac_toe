@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react"
 import { useGameContext } from "../contexts/GameContext"
 import socketService from "../services/socketService"
@@ -10,6 +11,7 @@ import {
 } from "../utils/alertFeatures"
 import Cell from "./Cell"
 import GameBoardHeader from "./GameBoardHeader"
+import Button from "./Button"
 
 export type StartGame = {
    symbol: "x" | "o"
@@ -35,6 +37,12 @@ export type GameResult = {
    otherPlayerWon: boolean | null
    gameIsATie: boolean | null
 }
+
+export type InitialMatrix = [
+   [null, null, null],
+   [null, null, null],
+   [null, null, null]
+]
 
 const closeLoadingAlert: CloseLoadingAlert = {
    render: `Second player has joined the game`,
@@ -62,12 +70,6 @@ const cellHasOtherPlayersSymbol = (
    return colValue.toLowerCase() !== playerSymbol.toLowerCase()
 }
 
-const initialMatrixValues = [
-   [null, null, null],
-   [null, null, null],
-   [null, null, null],
-]
-
 const initialGameResultValues = {
    currentPlayerWon: null,
    otherPlayerWon: null,
@@ -92,12 +94,14 @@ function Game() {
    const [receivedLostWonOrTieMsg, setReceivedLostWonOrTieMsg] =
       useState<OutcomeMessages>(null)
    const [loadingToastIds, setLoadingToastIds] = useState<any>([])
-   const [matrix, setMatrix] = useState<GameMatrix>(initialMatrixValues)
-   console.log(matrix)
+   const [matrix, setMatrix] = useState<GameMatrix>([
+      [null, null, null],
+      [null, null, null],
+      [null, null, null],
+   ])
    const [gameResult, setGameResult] = useState<GameResult>(
       initialGameResultValues
    )
-   const [isResettingGame, setIsResettingGame] = useState<boolean>(false)
 
    const [winingCells, setWiningCells] = useState<WiningCells>(
       initialWiningCellValues
@@ -218,11 +222,7 @@ function Game() {
       setMatrix(newMatrix)
 
       try {
-         gameService.updateGame(
-            socketService.socket,
-            newMatrix,
-            isResettingGame
-         )
+         gameService.updateGame(socketService.socket, newMatrix)
          setIsPlayerTurn(false)
 
          const [currentPlayerWon, otherPlayerWon, winingCellsToSet] =
@@ -250,10 +250,15 @@ function Game() {
                ...prev,
                ...winingCellsToSet,
             }))
+
+            setIsPlayerTurn(!isPlayerTurn)
+            setIsGameStarted(false)
             gameService.gameWin(
                socketService.socket,
                theGameIsATieMessage,
-               winingCellsToSet
+               winingCellsToSet,
+               isPlayerTurn,
+               gameInfo
             )
             toast.info(theGameIsATieMessage)
             return
@@ -278,10 +283,14 @@ function Game() {
                otherPlayerWon: prev.otherPlayerWon + 1,
             }))
 
+            setIsPlayerTurn(!isPlayerTurn)
+            setIsGameStarted(false)
             gameService.gameWin(
                socketService.socket,
                youWonMessage,
-               winingCellsToSet
+               winingCellsToSet,
+               isPlayerTurn,
+               gameInfo
             )
             toast.error(youLostMessage)
          }
@@ -305,10 +314,14 @@ function Game() {
                currentPlayerWon: prev.currentPlayerWon + 1,
             }))
 
+            setIsPlayerTurn(!isPlayerTurn)
+            setIsGameStarted(false)
             gameService.gameWin(
                socketService.socket,
                youLostMessage,
-               winingCellsToSet
+               winingCellsToSet,
+               isPlayerTurn,
+               gameInfo
             )
             toast.success(youWonMessage)
          }
@@ -317,28 +330,26 @@ function Game() {
       }
    }
 
-   // const resetGame = async () => {
-   //    if (!socketService.socket) return
-
-   //    try {
-   //       setIsResettingGame(true)
-   //       setGameResult(initialGameResultValues)
-   //       setWiningCells(initialWiningCellValues)
-   //       setReceivedLostWonOrTieMsg(null)
-   //       setIsGameStarted(true)
-   //       setIsPlayerTurn(false)
-   //       setGameInfo((prev) => ({
-   //          ...prev,
-   //          totalGames: prev.currentGameNumber,
-   //          currentGameNumber: prev.currentGameNumber + 1,
-   //       }))
-   //       await gameService.gameReset(socketService.socket)
-   //    } catch (error) {
-   //       console.error(error)
-   //    } finally {
-   //       setIsResettingGame(false)
-   //    }
-   // }
+   const resetGame = async () => {
+      if (!socketService.socket) return
+      const matrixValuesReset: InitialMatrix = [
+         [null, null, null],
+         [null, null, null],
+         [null, null, null],
+      ]
+      try {
+         await gameService.gameReset(socketService.socket, {
+            gameInfo,
+            gameResultReset: initialGameResultValues,
+            isGameStartedReset: true,
+            matrixReset: matrixValuesReset,
+            receivedLostWonOrTieMsgReset: null,
+            winingCellsReset: initialWiningCellValues,
+         })
+      } catch (error) {
+         console.error(error)
+      }
+   }
 
    const handleGameUpdate = useCallback(async () => {
       if (!socketService.socket) return
@@ -360,9 +371,9 @@ function Game() {
 
    const handleGameStart = useCallback(async () => {
       if (!socketService.socket) return
-
+      let id: any
       if (loadingToastIds.length === 0) {
-         const id = toast.loading("Waiting for the second player to join")
+         id = toast.loading("Waiting for the second player to join")
          setLoadingToastIds((prev: [typeof id]) => {
             const newArray = [...prev]
             newArray.push(id)
@@ -409,42 +420,27 @@ function Game() {
       try {
          await gameService.onGameWin(
             socketService.socket,
-            ({ message, winingCells }) => {
-               setIsPlayerTurn(false)
+            ({ message, winingCells, isPlayerTurnReset, newGameInfo }) => {
+               setIsPlayerTurn(!isPlayerTurn)
+               setIsGameStarted(false)
                setReceivedLostWonOrTieMsg(message as OutcomeMessages)
                setWiningCells((prev) => ({
                   ...prev,
                   ...winingCells,
+               }))
+               setIsPlayerTurn(isPlayerTurnReset)
+               setGameInfo((prev) => ({
+                  ...prev,
+                  ...newGameInfo,
+                  currentPlayerWon: newGameInfo.otherPlayerWon,
+                  otherPlayerWon: newGameInfo.currentPlayerWon,
                }))
             }
          )
       } catch (error) {
          console.error(error)
       }
-   }, [setIsPlayerTurn])
-
-   const handleGameReset = useCallback(async () => {
-      if (!socketService.socket) return
-      try {
-         await gameService.onGameReset(socketService.socket, () => {
-            setIsResettingGame(true)
-            setGameResult(initialGameResultValues)
-            setWiningCells(initialWiningCellValues)
-            setReceivedLostWonOrTieMsg(null)
-            setIsGameStarted(true)
-            setIsPlayerTurn(true)
-            setGameInfo((prev) => ({
-               ...prev,
-               totalGames: prev.currentGameNumber,
-               currentGameNumber: prev.currentGameNumber + 1,
-            }))
-         })
-      } catch (error) {
-         console.error(error)
-      } finally {
-         setIsResettingGame(false)
-      }
-   }, [setIsGameStarted, setIsPlayerTurn])
+   }, [isPlayerTurn, setIsGameStarted, setIsPlayerTurn])
 
    useEffect(() => {
       if (!playerSymbol) return
@@ -500,8 +496,36 @@ function Game() {
    }, [receivedLostWonOrTieMsg])
 
    useEffect(() => {
-      handleGameReset()
-   }, [handleGameReset])
+      // prettier-ignore
+      (async () => {
+      if (!socketService.socket) return
+
+      try {
+            await gameService.onGameReset(socketService.socket, ({
+               gameInfo, 
+               gameResultReset,
+               isGameStartedReset,
+               matrixReset,
+               receivedLostWonOrTieMsgReset,
+               winingCellsReset
+            }) => {
+            setGameInfo((prev) => ({
+               ...prev,
+               totalGames: gameInfo.currentGameNumber,
+               currentGameNumber: gameInfo.currentGameNumber + 1,
+            }))
+            setGameResult(gameResultReset)
+            setMatrix(matrixReset)
+            setWiningCells(winingCellsReset)
+            setReceivedLostWonOrTieMsg(receivedLostWonOrTieMsgReset)
+            setIsGameStarted(isGameStartedReset)
+            setIsGameStarted(true)
+        })
+      } catch (error) {
+         console.error(error)
+      } 
+    })()
+   }, [isPlayerTurn, setIsGameStarted, setIsPlayerTurn])
 
    useEffect(() => {
       handleGameUpdate()
@@ -509,12 +533,7 @@ function Game() {
       handleGameWin()
    }, [handleGameStart, handleGameUpdate, handleGameWin])
 
-   useEffect(() => {
-      console.log("here", matrix)
-      if (isResettingGame) setMatrix(initialMatrixValues)
-   }, [isResettingGame, matrix])
-
-   // const gameHasResult = true || Object.values(gameResult).includes(true)
+   const gameHasResult = Object.values(gameResult).includes(true)
 
    return (
       <div className="flex flex-col relative">
@@ -522,14 +541,6 @@ function Game() {
             // this is basically to disable the board when its not the players turn or when the game has not started yet.
             <span className="w-full h-full absolute bottom-0 left-0 z-[99] cursor-default" />
          ) : null}
-
-         {/* <div
-            className={`${gameHasResult ? "opacity-100" : "opacity-0"} z-[999]`}
-         >
-            <button disabled={!gameHasResult} onClick={resetGame}>
-               Restart
-            </button>
-         </div> */}
 
          <div className="text-4xl">
             <GameBoardHeader
@@ -593,6 +604,12 @@ function Game() {
                </div>
             )
          })}
+
+         <div className="w-full flex justify-center items-center mt-8">
+            <Button gameHasResult={gameHasResult} resetGame={resetGame}>
+               Next Game
+            </Button>
+         </div>
       </div>
    )
 }

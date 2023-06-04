@@ -60,6 +60,7 @@ export class GameController {
       // every socket in the room except the socket that sent this event
       // will receive this event and payload(in this case it is an update
       // to the ticTacToe game board, GameMatrix)
+      console.log("inside game controller: ", message)
       socket.emit("on_game_reset", message)
       socket.to(gameRoom).emit("on_game_reset", message)
    }

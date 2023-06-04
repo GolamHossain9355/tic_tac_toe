@@ -1,13 +1,26 @@
 import { Socket } from "socket.io-client"
-import { GameMatrix, StartGame, WiningCells } from "../components/Game"
+import {
+   GameInfo,
+   GameMatrix,
+   GameResult,
+   StartGame,
+   WiningCells,
+} from "../components/Game"
 
 type MessageReceived = {
    message: string
    winingCells: WiningCells
+   isPlayerTurnReset: boolean
+   newGameInfo: GameInfo
 }
 
 type ResetGame = {
-   message: string
+   gameInfo: GameInfo
+   matrixReset: GameMatrix
+   gameResultReset: GameResult
+   winingCellsReset: WiningCells
+   receivedLostWonOrTieMsgReset: null
+   isGameStartedReset: boolean
 }
 class GameService {
    public async joinGameRoom(socket: Socket, roomId: string): Promise<boolean> {
@@ -20,14 +33,9 @@ class GameService {
       })
    }
 
-   public async updateGame(
-      socket: Socket,
-      gameMatrix: GameMatrix,
-      isResettingGame: boolean
-   ) {
+   public async updateGame(socket: Socket, gameMatrix: GameMatrix) {
       socket.emit("update_game", {
          matrix: gameMatrix,
-         resettingGame: isResettingGame,
       })
    }
 
@@ -39,7 +47,6 @@ class GameService {
       }) => void
    ) {
       socket.on("on_game_update", (updatedGameValues) => {
-         console.log("here game service")
          return listener(updatedGameValues)
       })
    }
@@ -56,9 +63,16 @@ class GameService {
    public async gameWin(
       socket: Socket,
       message: string,
-      winingCells: WiningCells | null
+      winingCells: WiningCells | null,
+      isPlayerTurnReset: boolean,
+      newGameInfo: GameInfo
    ) {
-      socket.emit("game_win", { message, winingCells })
+      socket.emit("game_win", {
+         message,
+         winingCells,
+         isPlayerTurnReset,
+         newGameInfo,
+      })
    }
 
    public async onGameWin(
@@ -68,8 +82,7 @@ class GameService {
       socket.on("on_game_win", (options) => listener(options))
    }
 
-   public async gameReset(socket: Socket) {
-      const message = "Reset game"
+   public async gameReset(socket: Socket, message: ResetGame) {
       socket.emit("game_reset", message)
    }
 
@@ -77,7 +90,9 @@ class GameService {
       socket: Socket,
       listener: (options: ResetGame) => void
    ) {
-      socket.on("on_game_reset", (options) => listener(options))
+      socket.on("on_game_reset", (options) => {
+         return listener(options)
+      })
    }
 }
 

@@ -74,7 +74,7 @@ function App() {
             newestOnTop={false}
             closeOnClick
             theme="light"
-            autoClose={5000}
+            autoClose={3000}
             progressStyle={{ backgroundColor: "rgb(126 34 206 / 1)" }}
             transition={Bounce}
          />
@@ -84,8 +84,14 @@ function App() {
                Lets Play Tic-Tac-Toe
             </div>
 
-            <div className="justify-center items-center w-fit h-fit my-auto">
-               {isInRoom ? <Game /> : <JoinRoom />}
+            <div className="w-full h-full">
+               {isInRoom ? (
+                  <Game />
+               ) : (
+                  <div className="w-full h-full flex justify-center items-center">
+                     <JoinRoom />
+                  </div>
+               )}
             </div>
          </div>
       </GameContext.Provider>

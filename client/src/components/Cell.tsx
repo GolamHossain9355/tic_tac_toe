@@ -14,7 +14,6 @@ interface ICellProps extends HTMLAttributes<HTMLDivElement> {
    cellHasOtherPlayersSymbol: boolean | null
    gameResult: GameResult
    winingCells: WiningCells
-   gameInfo: GameInfo
 }
 
 const waitTimeBeforeCellIsGray = (
@@ -54,7 +53,6 @@ const Cell: FC<ICellProps> = ({
    winingCells,
    cellPosition,
    cellIndex,
-   gameInfo,
    ...rest
 }) => {
    const [disabledCellValue, setDisabledCellValue] = useState<null | string>(

@@ -583,7 +583,6 @@ function Game() {
                         gameResult={gameResult}
                         winingCells={winingCells}
                         cellIndex={colIndex + rowIndex}
-                        gameInfo={gameInfo}
                         onClick={() =>
                            updateGameMatrix(rowIndex, colIndex, playerSymbol)
                         }
@@ -605,7 +604,7 @@ function Game() {
             )
          })}
 
-         <div className="w-full flex justify-center items-center mt-8">
+         <div className="w-full flex justify-center items-center mt-8 mb-20">
             <Button gameHasResult={gameHasResult} resetGame={resetGame}>
                Next Game
             </Button>

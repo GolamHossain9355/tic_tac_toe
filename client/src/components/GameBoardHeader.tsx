@@ -134,8 +134,11 @@ const GameBoardHeader: FC<IGameBoardHeaderProps> = ({
    }, [gameInfo.currentPlayerWon, gameInfo.otherPlayerWon, gameInfo.totalGames])
 
    return (
-      <div className={`${className} mb-14 mt-6`} {...rest}>
-         <div className="font-normal text-purple-800">
+      <div
+         className={`${className} w-80 md:w-[480px] lg:w-[624px] mx-auto mb-14 mt-6`}
+         {...rest}
+      >
+         <div className="max-w-md mx-auto font-normal text-purple-800">
             <table className="w-full text-xl border border-gray-300">
                <tr>
                   <th className="font-normal text-right w-1/2 border border-gray-300 p-2">

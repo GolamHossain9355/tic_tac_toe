@@ -1,6 +1,6 @@
 # Tic-Tac-Toe Game
 
-![Tic-Tac-Toe](./client/public/tictactoe.png)
+![Tic-Tac-Toe](./client/public/images/tictactoe.png)
 
 ## Table of Contents
 
